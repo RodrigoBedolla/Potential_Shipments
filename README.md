@@ -1,17 +1,19 @@
 # Potential_Shipments
 
-Get all the orders are ready to ship, to share with planning department
+Objective:
+
+ * Get all the orders are ready to ship, to share with planning department
 
 Input:
 
-  *Daily Master base and Ship status
-  *860 Holds
-  *Hold tool report
-  *Previous day PO Viewer
+  * Daily Master base and Ship status
+  * 860 Holds
+  * Hold tool report
+  * Previous day PO Viewer
 
 Output:
 
-  *Current ship orders and complete orders ready to ship, excluding HPE restrictions and internal holds
+  * Current ship orders and complete orders ready to ship, excluding HPE restrictions and internal holds
 
 Updates and Releases:
 
