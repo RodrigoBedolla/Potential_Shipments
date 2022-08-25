@@ -3,10 +3,10 @@
 Get all the orders are ready to ship, to share with planning department
 
 Input:
-*Daily Master base and Ship status
-*860 Holds
-*Hold tool report
-*Previous day PO Viewer
+  Daily Master base and Ship status
+  860 Holds
+  Hold tool report
+  Previous day PO Viewer
 
 Output:
 *Orders ready to ship
