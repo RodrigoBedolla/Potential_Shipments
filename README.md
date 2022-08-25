@@ -3,16 +3,15 @@
 Get all the orders are ready to ship, to share with planning department
 
 Input:
-  Daily Master base and Ship status
-  860 Holds
-  Hold tool report
-  Previous day PO Viewer
+
+  *Daily Master base and Ship status
+  *860 Holds
+  *Hold tool report
+  *Previous day PO Viewer
 
 Output:
-*Orders ready to ship
-*Shipped Orders
-*Partial Orders
-*Orders with any hold
+
+  *Current ship orders and complete orders ready to ship, excluding HPE restrictions and internal holds
 
 Updates and Releases:
 
