@@ -16,5 +16,5 @@ Output:
 
 Updates and Releases:
 
-*08/15/2022: Report shared to the team
-*08/25/2022: hold_tool_format method do fixed miss match in work orders merge
+ *08/15/2022: Report shared to the team
+ *08/25/2022: hold_tool_format method do fixed miss match in work orders merge
