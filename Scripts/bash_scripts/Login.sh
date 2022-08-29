@@ -1,0 +1,13 @@
+curl 'http://10.19.17.100/CyGNUS/srvLogin?' \
+  -H 'Accept: application/json, text/plain, */*' \
+  -H 'Accept-Language: en-US,en;q=0.9,es-MX;q=0.8,es;q=0.7' \
+  -H 'Connection: close' \
+  -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' \
+  -H 'Origin: http://10.19.17.100' \
+  -H 'Referer: http://10.19.17.100/CyGNUS/login.jsp' \
+  -H 'Sec-Fetch-Dest: empty' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Site: same-origin' \
+  --cookie-jar bash_scripts/cookie.txt \
+  --data-raw 'JDOName=HPE&webAppVersion=4&client=HPE&userName=erikruiz&password=Magaly25' \
+  --compressed
