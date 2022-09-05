@@ -9,6 +9,11 @@ def Shippeable():
 
     file = path()+'\Files\\Shippeable_'+format_date(3)+'.xlsx'
 
+    previous_master_share()
+    prev_master = pd.read_excel(path()+'\Files\\Previous_Master.xlsx')
+    prev_master['WORK ORDER'] = prev_master['WORK ORDER'].astype(str).str.replace("\.0$", "",regex = True)
+    prev_master.fillna('NA',inplace = True)
+
     hold_tool()
 
     master_summary = pd.read_excel(share_path()+'\Master Template\\master_base.xlsx')
@@ -35,7 +40,8 @@ def Shippeable():
     master_summary['SHIPPEABLE'] = np.where((master_summary['GENERAL STATUS'] == 'READY TO SHIP') & (master_summary['COMPLEXITY CATEGORY'] != 'BTS REMAN') & (master_summary['ITEM RDD'].dt.strftime('%Y-%m-%d') <= current_date().strftime('%Y-%m-%d')),
                         (np.where(master_summary['HPE RESTRICTIONS'] != 'NA','FG - HPE RESTRICTED',(np.where((master_summary['INTERNAL HOLDS'] == 'NA') | ((master_summary['INTERNAL HOLDS'].str.contains('GLOBAL TRADE')) 
                         & (master_summary['INTERNAL HOLDS'].apply(len)<170)),'READY TO SHIP',(np.where(master_summary['INTERNAL HOLDS'].str.contains('WORKORDER'),'FG - HOLD BY WO',
-                        (np.where(master_summary['INTERNAL HOLDS'].str.contains('HOLD_SKU'),'FG - HOLD BY SKU',(np.where(master_summary['INTERNAL HOLDS'].str.contains('HOLD_SSN'),'FG - HOLD BY SSN','NA')))))))))),
+                        (np.where(master_summary['INTERNAL HOLDS'].str.contains('HOLD_SKU'),'FG - HOLD BY SKU',(np.where(master_summary['INTERNAL HOLDS'].str.contains('HOLD_SSN'),'FG - HOLD BY SSN',
+                        (np.where(master_summary['INTERNAL HOLDS'].str.contains('HOLD_PARTNO'),'FG - HOLD BY PARTNO','NA')))))))))))),
                         (np.where(master_summary['GENERAL STATUS'].str.contains('SHIPPED '+str(format_date(4))),'SHIPPED '+str(format_date(4)),'NA')))
 
     #--------------UPDATE DN QTY WITH SHIP STATUS PARTIAL SHIPMENTS---------------
@@ -74,6 +80,8 @@ def Shippeable():
     master_shippped = master_summary[master_summary['SHIPPEABLE'].str.contains('SHIPPED|PARTIAL') | 
                 (master_summary['SHIPPEABLE'].str.contains('READY') & (master_summary['SHIP TYPE'] == 'SP'))]
     master_summary_sc = pd.concat([master_summary_sc,master_shippped]).reset_index(drop = True)
+
+    master_summary = master_summary.merge(prev_master[['WORK ORDER','ITEM','BASE SKU']],on = 'WORK ORDER',how = 'left')
     
     ship_pivot = pd.pivot_table(master_summary_sc,index = ['COMPLEXITY CATEGORY'],values = ['OPEN QTY'],aggfunc = 'sum',margins_name = 'SHIPPEABLE')
     ship_pivot = pd.DataFrame(ship_pivot.to_records())
@@ -90,10 +98,9 @@ def Shippeable():
 
     master_summary.to_excel(path()+'\Files\\RAWDATA.xlsx',  index = False)
 
+    #send_email('ecmms.OM@FII-NA.com','','Shippeable '+format_date(4),ship_pivot)
     delete_local_files()
+    case_assignnment(master_summary,prev_master)
+    
 
-    send_email('ecmms.OM@FII-NA.com','','Shippeable '+format_date(4),ship_pivot)
-
-    case_assignnment(master_summary)
-
-#Shippeable()
+Shippeable()

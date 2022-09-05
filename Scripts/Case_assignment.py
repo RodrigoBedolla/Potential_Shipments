@@ -2,16 +2,10 @@ from My_Book import *
 import pandas as pd
 import numpy as np
 
-def case_assignnment(df_master):
-
-    previous_master_share()
-
-    prev_master = pd.read_excel(path()+'\Files\\Previous_Master.xlsx')
-    prev_master['WORK ORDER'] = prev_master['WORK ORDER'].astype(str).str.replace("\.0$", "",regex = True)
-    prev_master.fillna('NA',inplace = True)
+def case_assignnment(df_master,prev_master):
 
     df_master['WORK ORDER'] = df_master['WORK ORDER'].astype(str).str.replace("\.0$", "",regex = True)
-    df_master = df_master.merge(prev_master[['WORK ORDER','ITEM','SCHEDULED DATE','STATUS']],on = 'WORK ORDER', how = 'left')
+    df_master = df_master.merge(prev_master[['WORK ORDER','SCHEDULED DATE','STATUS']],on = 'WORK ORDER', how = 'left')
     df_master.fillna('NA',inplace = True)
     df_master = df_master[(df_master['ITEM'] != 'NA')].reset_index(drop = True)
 
@@ -42,11 +36,13 @@ def case_assignnment(df_master):
 
     SOC_date,SAB_date = get_SOC_SAB()
 
-    master_non_tbc['BUCKET'] = np.where((master_non_tbc['BUCKET'].str.contains('NA') == True),(np.where(master_non_tbc['SCHEDULED DATE'].dt.date <= SOC_date,'SHORT RECOVERY BEFORE SOC',
-                        (np.where((master_non_tbc['SCHEDULED DATE'].dt.date > SOC_date) & (master_non_tbc['SCHEDULED DATE'].dt.date <= SAB_date),
-                        'SHORT RECOVERY '+((SAB_date - master_non_tbc['SCHEDULED DATE']).dt.days).astype(str)+' DAYS BEFORE SAB',
-                        'SHORT RECOVERY IN '+((master_non_tbc['SCHEDULED DATE'] - current_date()).dt.days).astype(str)+' DAYS')))),master_non_tbc['BUCKET'])
+    master_non_tbc['RECOVERY DAYS'] = (master_non_tbc['SCHEDULED DATE'] - current_date()).dt.days
+    master_non_tbc = assing_buckets(master_non_tbc,'RECOVERY DAYS','RECOVERY DAYS')
 
+    master_non_tbc['BUCKET'] = np.where((master_non_tbc['BUCKET'].str.contains('NA') == True),(np.where(master_non_tbc['SCHEDULED DATE'].dt.date <= SOC_date,'SHORT SOC',
+                        (np.where((master_non_tbc['SCHEDULED DATE'].dt.date > SOC_date) & (master_non_tbc['SCHEDULED DATE'].dt.date <= SAB_date),
+                        'SHORT SAB','SHORT ('+master_non_tbc['RECOVERY DAYS']+')')))),master_non_tbc['BUCKET'])
+   
     df_master_nested = df_master_nested[0:0]
     df_master_nested = pd.concat([master_non_tbc,master_tbc]).reset_index(drop = True)
 
@@ -81,7 +77,6 @@ def case_assignnment(df_master):
     df_master.drop(columns=['SHORT'],inplace = True)
 
     df_master = priority_bucket(df_master)
-
     df_master.to_excel(path()+'\Files\\Cases_assignment.xlsx',index = False)
 
 #df_master = pd.read_excel(path()+'\Files\\RAWDATA.xlsx')

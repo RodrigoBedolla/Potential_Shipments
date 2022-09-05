@@ -7,7 +7,19 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 from code_holds import code_holds
 from Hold_tool import po_validation,Hold_type_column
+from SAP import saplogin
 
+def hold_by_pn(df):
+
+    df = df[['ID','Type']][df['Type'].str.contains('PARTNO')==True].drop_duplicates(subset='ID').reset_index(drop=True)
+    sap_input(df,'ID')
+    if not df.empty:
+        saplogin(4)
+
+    df = zpp9_format()
+    df = df.rename(columns={'Material':'ID'})
+
+    return df
 
 def hold_tool():
 
@@ -31,6 +43,14 @@ def hold_tool():
 
     df = df[txt_array('hold_tool_columns.txt')]
     df = hold_tool_format(df)
+
+    zpp9 = hold_by_pn(df)
+
+    df = df.merge(zpp9[['ID','Order']],on='ID',how='left')
+    df.fillna(0,inplace=True)
+
+    df['Type'] = np.where(df['Type'].str.contains('PARTNO'),df['Type'].astype(str) + ': ' + df['ID'].astype(str),df['Type'])
+    df['ID'] = np.where(df['Order']==0,df['ID'],df['Order'].astype(np.int64))
 
     #-------------------------------------------------------------------------------
    
@@ -60,18 +80,18 @@ def hold_tool():
     df = Hold_type_column(df)
     df_po = df[df['HOLD LEVEL'].str.contains('PO') == True].reset_index(drop= True)
     df_po = df_po.rename(columns = {'ID':'PO'})
-    df_po = pd.merge(df_po,df_master['PO'], on= ['PO'], how= 'inner')
+    df_po = pd.merge(df_po,df_master['PO'], on= ['PO'], how= 'inner').drop_duplicates().reset_index(drop=True)
     df_po = df_po.rename(columns = {'PO':'ID'})
 
     df_wo = df[df['HOLD LEVEL'].str.contains('WO') == True].reset_index(drop= True)
     df_wo = df_wo.rename(columns = {'ID':'WORK ORDER'})
-    df_wo = pd.merge(df_wo,df_master['WORK ORDER'], on= ['WORK ORDER'], how= 'inner')
+    df_wo = pd.merge(df_wo,df_master['WORK ORDER'], on= ['WORK ORDER'], how= 'inner').drop_duplicates().reset_index(drop=True)
     df_wo = df_wo.rename(columns = {'WORK ORDER':'ID'})
 
     df_sku = df[df['HOLD LEVEL'].str.contains('BASE SKU') == True].reset_index(drop= True)
     df_sku = df_sku.rename(columns = {'ID':'BASE SKU'})
-    df_sku = pd.merge(df_sku,df_master['BASE SKU'], on= ['BASE SKU'], how= 'inner')
-    df_sku = pd.merge(df_sku, df_master[['BASE SKU','WORK ORDER']], on = 'BASE SKU', how = "left")
+    df_sku = pd.merge(df_sku,df_master['BASE SKU'], on= ['BASE SKU'], how= 'inner').drop_duplicates().reset_index(drop=True)
+    df_sku = pd.merge(df_sku, df_master[['BASE SKU','WORK ORDER']], on = 'BASE SKU', how = "left").drop_duplicates().reset_index(drop=True)
     #df_sku['WORK ORDER'] = df_sku['WORK ORDER'].astype(int)
     df_sku.pop('BASE SKU')
     df_sku.insert(0, 'WORK ORDER', (df_sku.pop('WORK ORDER')))

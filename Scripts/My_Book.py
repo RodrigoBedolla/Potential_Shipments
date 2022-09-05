@@ -1001,17 +1001,49 @@ def possible_cases(df,case):
 
 def priority_bucket(df):
 
-    data = [['SHORT TBC',1],['SHORT',2],['SHORT BEFORE SOC',3],['SHORT BEDORE SAB',4],['CTB',5],['KITTING',6],['WIP',7],['PACKING',8]]
-    order_bucket = pd.DataFrame(data, columns=['BUCKET', 'PRIORITY'])
+    priority = [['SHORT TBC',1],['SHORT',2],['SHORT SOC',3],['SHORT SAB',4],['CTB',5],['KITTING',6],['WIP',7],['PACKING',8]]
+    order_bucket = pd.DataFrame(priority, columns=['ID', 'PRIORITY'])
 
-    df['BUCKET'] = np.where(df['BUCKET'].str.contains('SHORT'),np.where(df['BUCKET'].str.contains('SOC'),'SHORT BEFORE SOC',
-                                np.where(df['BUCKET'].str.contains('SAB'),'SHORT BEFORE SAB',
+    df['ID'] = np.where(df['BUCKET'].str.contains('SHORT'),np.where(df['BUCKET'].str.contains('SOC'),'SHORT SOC',
+                                np.where(df['BUCKET'].str.contains('SAB'),'SHORT SAB',
                                 np.where(df['BUCKET'].str.contains('TBC'),'SHORT TBC','SHORT'))),df['BUCKET'])
 
-    case_assignment_temp = df.merge(order_bucket,on = 'BUCKET', how = 'left')
-    case_assignment_temp = case_assignment_temp[['PO','BUCKET','PRIORITY']].sort_values(by='PRIORITY').drop_duplicates(subset='PO',keep='first').reset_index(drop = True)
-    case_assignment_temp.rename(columns={'BUCKET':'GENERAL'},inplace = True)\
+    df['BUCKET'] = np.where(df['BUCKET'].str.contains('SHORT'),np.where(df['BUCKET'].str.contains('SOC'),'SHORT SOC',
+                                np.where(df['BUCKET'].str.contains('SAB'),'SHORT SAB',
+                                np.where(df['BUCKET'].str.contains('TBC'),'SHORT TBC','SHORT ('+df['RECOVERY DAYS']+')'))),df['BUCKET'])
 
-    df = df.merge(case_assignment_temp[['PO','GENERAL']],on = 'PO',how = 'left')
+    case_assignment_temp = df.merge(order_bucket,on = 'ID', how = 'left')
+    case_assignment_temp = case_assignment_temp[['PO','BUCKET','PRIORITY']].sort_values(by='PRIORITY').drop_duplicates(subset='PO',keep='first').reset_index(drop = True)
+    case_assignment_temp.rename(columns={'BUCKET':'FINAL STATUS'},inplace = True)
+
+    df = df.merge(case_assignment_temp[['PO','FINAL STATUS']],on = 'PO',how = 'left')
+    df.drop(columns=['BUCKET','RECOVERY DAYS','ID'],inplace = True)
     
+    return df
+
+def assing_buckets(df,column_name,reference_column):
+
+    df.fillna('NA',inplace = True)
+
+    bins = [0,5]
+    for i in range(0,len(df.index)):
+
+        if i % 10 == 0 and i > 1:
+
+            bins = bins + [i]
+
+    df[column_name] = pd.cut(df[reference_column],bins).astype(str)
+
+    array = [['\.0$',''],['(',''],[',',' to'],[']','']]
+
+    for i in array:
+
+        df[column_name] = df[column_name].str.replace(i[0],i[1], regex = True)
+
+    return df
+
+def zpp9_format():
+
+    df =  pd.read_csv(path()+'\Files\zpp9.xls', skiprows=[0,1], sep='\\t', thousands=',' , engine='python', encoding='ISO-8859-1')
+
     return df
