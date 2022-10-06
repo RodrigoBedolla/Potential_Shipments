@@ -14,8 +14,8 @@ import numpy as np
 #Shared Folder path
 def share_path():
 
-    def_path = '\\\\10.19.16.56\Order Management\OM Projects'
     #def_path = '\\\\10.19.16.56\Order Management\OM Projects'
+    def_path = '\\\\10.19.17.32\\CygnusFiles\\OM_RPA\\OM Projects'
     
     #local test:
 
@@ -414,7 +414,7 @@ def delete_local_files(): #Delete file from 'Files' folder for specific project
 
     log_file_route = path()+'\Files'
     for i in os.listdir(log_file_route): 
-        if (i != 'Shippeable_'+format_date(3)+'.xlsx') & (i != 'Master_columns.txt') & (i != 'Summary_columns.txt') & (i != 'Ship_columns.txt') & (i != 'RAWDATA.xlsx'):
+        if (i != 'Shippeable_'+format_date(3)+'.xlsx') & (i != 'Master_columns.txt') & (i != 'Summary_columns.txt') & (i != 'Ship_columns.txt') & (i != 'RAWDATA.xlsx') & (i != 'Shippeable_'+format_date(3)+'(CA).xlsx'):
             print("Removed: "+i)
             os.remove(path()+'\Files\\' + i)
 

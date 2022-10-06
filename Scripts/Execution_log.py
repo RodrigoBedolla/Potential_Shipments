@@ -23,15 +23,23 @@ def Execution_log(start, flag, error):
 
     if flag == 'SUCCSESS':
 
-        execution_log = execution_log.append({'ID' : txt_array_2d('Description_of _RPAs_releases.txt')[6][0], 'SCRIPT NAME' : txt_array_2d('Description_of _RPAs_releases.txt')[6][1],
+        #execution_log = execution_log.append({'ID' : txt_array_2d('Description_of _RPAs_releases.txt')[6][0], 'SCRIPT NAME' : txt_array_2d('Description_of _RPAs_releases.txt')[6][1],
+        #                                    'RELEASE DATE' : txt_array_2d('Description_of _RPAs_releases.txt')[6][2], 'START' : start,'FINISH' : current_time,
+        #                                    'EXECUTION TIME' : td_mins,'PASS/FAIL' : flag,'FAILURE DESCRIPTION' : ''}, ignore_index=True)
+
+        execution_log = pd.concat([execution_log, pd.DataFrame.from_records([{'ID' : txt_array_2d('Description_of _RPAs_releases.txt')[6][0], 'SCRIPT NAME' : txt_array_2d('Description_of _RPAs_releases.txt')[6][1],
                                             'RELEASE DATE' : txt_array_2d('Description_of _RPAs_releases.txt')[6][2], 'START' : start,'FINISH' : current_time,
-                                            'EXECUTION TIME' : td_mins,'PASS/FAIL' : flag,'FAILURE DESCRIPTION' : ''}, ignore_index=True)
+                                            'EXECUTION TIME' : td_mins,'PASS/FAIL' : flag,'FAILURE DESCRIPTION' : ''}])], ignore_index=True)
 
     else:
 
-        execution_log = execution_log.append({'ID' : txt_array_2d('Description_of _RPAs_releases.txt')[6][0], 'SCRIPT NAME' : txt_array_2d('Description_of _RPAs_releases.txt')[6][1],
+        #execution_log = execution_log.append({'ID' : txt_array_2d('Description_of _RPAs_releases.txt')[6][0], 'SCRIPT NAME' : txt_array_2d('Description_of _RPAs_releases.txt')[6][1],
+        #                                    'RELEASE DATE' : txt_array_2d('Description_of _RPAs_releases.txt')[6][2], 'START' : start, 'FINISH' : current_time,
+        #                                    'EXECUTION TIME' : td_mins,'PASS/FAIL' : flag,'FAILURE DESCRIPTION' : error}, ignore_index=True)
+
+        execution_log = pd.concat([execution_log, pd.DataFrame.from_records([{'ID' : txt_array_2d('Description_of _RPAs_releases.txt')[6][0], 'SCRIPT NAME' : txt_array_2d('Description_of _RPAs_releases.txt')[6][1],
                                             'RELEASE DATE' : txt_array_2d('Description_of _RPAs_releases.txt')[6][2], 'START' : start, 'FINISH' : current_time,
-                                            'EXECUTION TIME' : td_mins,'PASS/FAIL' : flag,'FAILURE DESCRIPTION' : error}, ignore_index=True)
+                                            'EXECUTION TIME' : td_mins,'PASS/FAIL' : flag,'FAILURE DESCRIPTION' : error}])], ignore_index=True)
 
     execution_log.to_excel(share_path()+'\Execution_log\Execution_log.xlsx', index=False)
 

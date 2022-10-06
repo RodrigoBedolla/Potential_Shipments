@@ -24,6 +24,7 @@ def Shippeable():
     master_summary['WORK ORDER'] = master_summary['WORK ORDER'].astype(str).str.replace("\.0$", "",regex=True)
     master_summary = primary_key(master_summary)
     master_summary['ITEM RDD'] = pd.to_datetime(master_summary['ITEM RDD'])
+    master_summary.drop(columns=['ITEM'],inplace = True)
 
     #HPE RESTRICTIONS and HOLD TOOL(INTERNAL HOLDS) from fill_holds function
     master_summary = fill_holds(master_summary)
@@ -32,6 +33,9 @@ def Shippeable():
     ship_status = pd.read_excel(share_path()+'\OM_RPAs_Files\Backup\SHIP_STATUS\\SHIP_STATUS.xlsx',sheet_name = 'SHIP STATUS',usecols = txt_array_local('Ship_columns.txt'))
 
     master_summary = master_summary.merge(ship_status, on = 'PRIMARY KEY', how = 'left').drop_duplicates().reset_index(drop = True)
+    master_summary.fillna('NA',inplace=True)
+    master_summary['ITEM'] = master_summary['ITEM'].astype(str).str.replace("\.0$", "",regex=True)
+    master_summary['PO + ITEM'] = master_summary['PO'].astype(str) + master_summary['ITEM']
     master_summary = master_summary[txt_array_local('Summary_columns.txt')]
 
     master_summary = rdd_validation(master_summary)
@@ -67,6 +71,7 @@ def Shippeable():
         master_summary.drop(columns=['OPEN QTY'],inplace = True)
         master_summary.rename(columns = {'DN QTY':'OPEN QTY'},inplace = True)
 
+    po_holds = master_summary['PO + ITEM'][master_summary['SHIPPEABLE'].str.contains('HOLD')].to_numpy()
     grouped = master_summary.groupby('PO')
     master_summary_sc = pd.DataFrame()
 
@@ -80,8 +85,8 @@ def Shippeable():
     master_shippped = master_summary[master_summary['SHIPPEABLE'].str.contains('SHIPPED|PARTIAL') | 
                 (master_summary['SHIPPEABLE'].str.contains('READY') & (master_summary['SHIP TYPE'] == 'SP'))]
     master_summary_sc = pd.concat([master_summary_sc,master_shippped]).reset_index(drop = True)
-
-    master_summary = master_summary.merge(prev_master[['WORK ORDER','ITEM','BASE SKU']],on = 'WORK ORDER',how = 'left')
+  
+    master_summary_sc = master_summary_sc.loc[~master_summary_sc['PO + ITEM'].isin(po_holds)]
     
     ship_pivot = pd.pivot_table(master_summary_sc,index = ['COMPLEXITY CATEGORY'],values = ['OPEN QTY'],aggfunc = 'sum',margins_name = 'SHIPPEABLE')
     ship_pivot = pd.DataFrame(ship_pivot.to_records())
@@ -98,9 +103,9 @@ def Shippeable():
 
     master_summary.to_excel(path()+'\Files\\RAWDATA.xlsx',  index = False)
 
-    #send_email('ecmms.OM@FII-NA.com','','Shippeable '+format_date(4),ship_pivot)
+    send_email('ecmms.OM@FII-NA.com','','Shippeable '+format_date(4),ship_pivot)
     delete_local_files()
     case_assignnment(master_summary,prev_master)
     
 
-Shippeable()
+#Shippeable()

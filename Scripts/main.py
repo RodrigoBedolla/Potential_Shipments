@@ -37,7 +37,7 @@ def job():
 
         if error_count == 0:
 
-            schedule.every().day.at("07:25").do(main)
+            schedule.every().day.at("07:20").do(main)
 
         elif error_count <= 5:
 
