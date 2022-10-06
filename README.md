@@ -18,3 +18,5 @@ Updates and Releases:
 
   * 08/15/2022: Report shared to the team
   * 08/25/2022: hold_tool_format method do fixed miss match in work orders merge
+  * 09/07/2022: HOLD_PARTNO validation
+  * 09/30/2022: Shippeable complete with case assigment created
