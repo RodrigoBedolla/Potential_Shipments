@@ -20,3 +20,6 @@ Updates and Releases:
   * 08/25/2022: hold_tool_format method do fixed miss match in work orders merge
   * 09/07/2022: HOLD_PARTNO validation
   * 09/30/2022: Shippeable complete with case assigment created
+  * 10/20/2022: Changed pivot table columns(Pending PGI and Shipped PGI) and also schedule was changed by SAB's reason.
+  * 10/21/2022: Shippeable_complete edited, CD_FLAG_BUCKET, NET_VALUE columns added.
+  * 12/02/2022: Added sleep time to files waiting to be updated with current date.  

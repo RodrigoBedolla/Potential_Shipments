@@ -1,0 +1,16 @@
+curl -b bash_scripts/cookie.txt 'http://10.19.17.100/CyGNUS/Logout' \
+  -X 'POST' \
+  -H 'Accept: application/json, text/plain, */*' \
+  -H 'Accept-Language: en-US,en;q=0.9,es-MX;q=0.8,es;q=0.7' \
+  -H 'Connection: keep-alive' \
+  -H 'Content-Length: 0' \
+  -H 'Origin: http://10.19.17.100' \
+  -H 'Referer: http://10.19.17.100/CyGNUS/core.jsp' \
+  -H 'Sec-Fetch-Dest: empty' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Site: same-origin' \
+  -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36' \
+  -H 'sec-ch-ua: "Chromium";v="110", "Not A(Brand";v="24", "Google Chrome";v="110"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Windows"' \
+  --compressed

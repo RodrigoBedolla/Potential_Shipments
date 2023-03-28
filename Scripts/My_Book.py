@@ -414,7 +414,7 @@ def delete_local_files(): #Delete file from 'Files' folder for specific project
 
     log_file_route = path()+'\Files'
     for i in os.listdir(log_file_route): 
-        if (i != 'Shippeable_'+format_date(3)+'.xlsx') & (i != 'Master_columns.txt') & (i != 'Summary_columns.txt') & (i != 'Ship_columns.txt') & (i != 'RAWDATA.xlsx') & (i != 'Shippeable_'+format_date(3)+'(CA).xlsx'):
+        if (i != 'Shippable_'+format_date(3)+'.xlsx') & (i != 'Master_columns.txt') & (i != 'Summary_columns.txt') & (i != 'Ship_columns.txt') & (i != 'RAWDATA.xlsx') & (i != 'Shippable_'+format_date(3)+'(CA).xlsx'):
             print("Removed: "+i)
             os.remove(path()+'\Files\\' + i)
 
@@ -646,6 +646,8 @@ def cyg_cookie():
     #Login to CyGNUS and save cooke with credentials
     subprocess.call('sh bash_scripts/Login.sh')
 
+def cyg_logout():
+    subprocess.call('sh bash_scripts/Logout.sh')
 
 def download_cygnus_files(df,column_list,column_name,array_range,sign_concat,report):
 
@@ -976,10 +978,10 @@ def get_SOC_SAB():
     flat_arr = np.reshape(txt_array_2d('SOC_SAB.txt'), -1, order='F')
     SOC_array = flat_arr[:len(flat_arr)//2]
     SAB_array = flat_arr[len(flat_arr)//2:]
-
+    
+    position = 0
     for x in SOC_array:
         x = pd.to_datetime(x)
-        position = 0
         if (x.month == current_date().month) & (x.year == current_date().year):
             SOC_date = x
             break
@@ -1047,3 +1049,61 @@ def zpp9_format():
     df =  pd.read_csv(path()+'\Files\zpp9.xls', skiprows=[0,1], sep='\\t', thousands=',' , engine='python', encoding='ISO-8859-1')
 
     return df
+
+def Ship_History(df):
+
+    master_unship = df[~df['SHIPPABLE'].str.contains('SHIPPED')].reset_index(drop = True)
+    master_shippped = df[df['SHIPPABLE'].str.contains('SHIPPED')].reset_index(drop = True)
+
+    wo_list = master_shippped['WORK ORDER'].astype(str).str.zfill(12).to_list()
+
+    iteration = 1
+    mat_master = pd.DataFrame()
+    try:
+
+        cyg_cookie()
+
+        for i in wo_list:
+            a = i
+            subprocess.call('sh bash_scripts/request.sh SHIP_HISTORY '+i)
+
+            data = open(path()+'\Json_Files\\Cygnus_Files.json','r') #read json file downloaded
+
+            json_array = json.load(data)
+            jsonf = json.dumps(json_array[1]) #get inormation to dataframe
+            df = pd.read_json(jsonf)
+
+            df = df[['item5','item4','item12','item16']]
+            df.columns = ['WORK ORDER','DN','DN QTY','PGI Date']
+
+            if iteration == 1:
+
+                mat_master = df
+                
+            else:
+                    
+                frames = [mat_master,df]
+                mat_master = pd.concat(frames)
+
+            iteration = iteration+1
+
+    except Exception as e:
+        print(e)
+        print(a)
+
+    cyg_logout()
+
+    mat_master.to_excel(path()+'\Files\\SHIP_HISTORY.xlsx',index=False)
+    mat_master.reset_index(drop=True,inplace=True)
+    mat_master['PGI Date'] = pd.to_datetime(mat_master['PGI Date']).sort_values()
+    mat_master = mat_master[mat_master['PGI Date'] >= current_date()].reset_index(drop=True)
+    mat_master['WORK ORDER'] = mat_master['WORK ORDER'].astype(str).str.replace("\.0$", "",regex=True)
+    mat_master['DN QTY'] = mat_master.groupby(['WORK ORDER'])['DN QTY'].transform('sum')
+    mat_master = mat_master.drop_duplicates(subset='WORK ORDER').reset_index(drop=True)
+
+    master_shippped = master_shippped.merge(mat_master[['WORK ORDER','DN QTY']],on = 'WORK ORDER', how = 'left').fillna('-').drop_duplicates().reset_index(drop = True)
+    master_shippped['OPEN QTY'] = np.where(master_shippped['DN QTY'] == '-', master_shippped['OPEN QTY'], master_shippped['DN QTY'])
+    master_unship = pd.concat([master_unship,master_shippped]).reset_index(drop = True)
+    master_unship.drop(columns='DN QTY',inplace = True)
+
+    return master_unship

@@ -4,7 +4,7 @@
 
 import schedule
 import time
-from Shippeable import *
+from Shippable_complete import *
 from Execution_log import *
 from Email_Alerts import *
 
@@ -21,7 +21,7 @@ def main():
     
     if week_day() not in txt_array('Weekend_Execution.txt'):
 
-        Shippeable()
+        Shippable_complete()
         Execution_log(start,'SUCCESS','')
     
     error_count = 0
@@ -36,8 +36,30 @@ def job():
     try:
 
         if error_count == 0:
-
-            schedule.every().day.at("07:20").do(main)
+            """
+            schedule.every().day.at("05:55").do(main)
+            schedule.every().day.at("07:25").do(main)
+            schedule.every().day.at("15:25").do(main)
+            schedule.every().day.at("23:55").do(main)
+            """
+            schedule.every().day.at("05:55").do(main)
+            schedule.every().day.at("07:25").do(main)
+            schedule.every().day.at("08:00").do(main)
+            schedule.every().day.at("09:00").do(main)
+            schedule.every().day.at("11:00").do(main)
+            schedule.every().day.at("12:00").do(main)
+            schedule.every().day.at("13:00").do(main)
+            schedule.every().day.at("14:00").do(main)
+            schedule.every().day.at("15:00").do(main)
+            schedule.every().day.at("15:25").do(main)
+            schedule.every().day.at("16:00").do(main)
+            schedule.every().day.at("17:00").do(main)
+            schedule.every().day.at("18:00").do(main)
+            schedule.every().day.at("19:00").do(main)
+            schedule.every().day.at("20:00").do(main)
+            schedule.every().day.at("21:00").do(main)
+            schedule.every().day.at("22:00").do(main)
+            schedule.every().day.at("23:58").do(main)
 
         elif error_count <= 5:
 

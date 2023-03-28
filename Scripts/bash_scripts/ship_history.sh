@@ -1,0 +1,17 @@
+curl -b bash_scripts/cookie.txt 'http://10.19.17.100/CyGNUS/srvcygnus' \
+  -H 'Accept: */*' \
+  -H 'Accept-Language: en-US,en;q=0.9,es-MX;q=0.8,es;q=0.7' \
+  -H 'Connection: keep-alive' \
+  -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' \
+  -H 'Origin: http://10.19.17.100' \
+  -H 'Referer: http://10.19.17.100/CyGNUS/' \
+  -H 'Sec-Fetch-Dest: empty' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Site: same-origin' \
+  -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36' \
+  -H 'X-Requested-With: XMLHttpRequest' \
+  -H 'sec-ch-ua: "Google Chrome";v="107", "Chromium";v="107", "Not=A?Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Windows"' \
+  --data-raw 'data=%5B%7B%22param%22%3A%22dtini%22%2C%22val%22%3A%222023-01-03%22%7D%2C%7B%22param%22%3A%22dtfin%22%2C%22val%22%3A%222023-01-03%22%7D%2C%7B%22param%22%3A%22strWO%22%2C%22val%22%3A%22'$1'%22%7D%2C%7B%22param%22%3A%22strSKU%22%2C%22val%22%3A%22%22%7D%2C%7B%22param%22%3A%22strHardL%22%2C%22val%22%3A%22hardlink%22%7D%2C%7B%22param%22%3A%22strMasterTrantype%22%2C%22val%22%3A%22MShipHistory%22%7D%2C%7B%22param%22%3A%22strTrantype%22%2C%22val%22%3A%22ShipHistory%22%7D%2C%7B%22param%22%3A%22environment%22%2C%22val%22%3A%22CyGNUS%22%7D%2C%7B%22param%22%3A%22strClient%22%2C%22val%22%3A%22HPE%22%7D%5D' \
+  --compressed

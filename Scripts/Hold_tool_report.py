@@ -25,7 +25,7 @@ def hold_tool():
 
     cookie_cygnus()
   
-    initial_date = (date.today() + relativedelta(months=-6)).strftime("%Y-%m-%d")
+    initial_date = (date.today() + relativedelta(months=-9)).strftime("%Y-%m-%d")
 
     final_date = (date.today()).strftime("%Y-%m-%d")
 
@@ -102,5 +102,7 @@ def hold_tool():
 
     po_priority_code = po_validation(df_po)
     code_holds(po_priority_code)
+
+    cyg_logout()
 
 #hold_tool()

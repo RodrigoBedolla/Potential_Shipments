@@ -4,7 +4,7 @@ import win32com.client as win32
 
 def send_email(recipient_email,cc_recipient_email,subject,df):
 
-    shippeable = path()+"\Files\\Shippeable_"+format_date(3)+".xlsx"
+    shippeable = path()+"\Files\\Shippable_"+format_date(3)+".xlsx"
 
     outlook = win32.Dispatch('outlook.application')
     mail = outlook.CreateItem(0)
@@ -48,7 +48,7 @@ def send_email(recipient_email,cc_recipient_email,subject,df):
                 </style>
     <body>Buen dia Team,<br><br>
             
-            Adjunto Shippeable """+format_date(4)+""" File.
+            Adjunto Shippable """+format_date(4)+""" File.
             <br><br>
 
             """+df.to_html(classes="df", index=False)+""" 

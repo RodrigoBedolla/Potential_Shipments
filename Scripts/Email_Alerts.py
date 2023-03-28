@@ -52,7 +52,7 @@ def send_mail_alert(recipient_email, subject, next_try, df):
                 '''+df.to_html(classes="df", index=False)+'<br><br><b>Saludos!<br>Rodrigo Bedolla<br>OM.</b>', subtype='html')
 
 
-    context = ssl.SSLContext(ssl.PROTOCOL_TLS)
+    context = ssl.create_default_context()
     connection = smtplib.SMTP('SMTP.Office365.com', 587)
     connection.ehlo()
     connection.starttls(context=context)
