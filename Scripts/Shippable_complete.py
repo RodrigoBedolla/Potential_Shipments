@@ -106,14 +106,43 @@ def ship_partial_validation(df):
 
     return df
 
+def standalone(df):
+
+    df['WORK ORDER'] = df['WORK ORDER'].astype('int64')
+
+    master_base = pd.read_excel(share_path()+'\Master Template\master_base.xlsx')
+    df = df.merge(master_base[['WORK ORDER','STANDALONE']],on='WORK ORDER',how='left').drop_duplicates().reset_index(drop=True)
+
+    try:
+        signal_855 = pd.read_excel(share_path()+'\OM_RPAs_Files\Backup\\Open\\Open '+format_date(3)+'.xlsx')
+    except:
+        signal_855 = pd.read_excel(share_path()+'\OM_RPAs_Files\Backup\\Open\\Open '+previous_labor_day().strftime('%m%d%Y')+'.xlsx')
+        
+    df = df.merge(signal_855[['WORK ORDER','F ACK D']],on='WORK ORDER',how='left').fillna(datetime.datetime.today().date()).drop_duplicates().reset_index(drop=True)
+
+    fmx_holidays=np.array([datetime.datetime.strptime(x,'%m/%d/%Y') for x in txt_array('holidays.txt')], dtype='datetime64[D]')
+    df['STFA DELTA'] = np.busday_count(df['F ACK D'].values.astype('datetime64[D]'),np.datetime64(datetime.date.today(), 'D'), weekmask=[1,1,1,1,1,0,0], holidays=fmx_holidays)
+    df['STANDALONE'] = np.where((df['COMPLEXITY CATEGORY'].astype(str).str.contains('PPS|BTO')) & ((df['STFA DELTA'] == -4) | (df['STFA DELTA'] == -5)) & (df['STANDALONE'] == 'Y'),'Y','N')
+
+    df.to_excel(path()+'\Files\\df_test.xlsx',index=False)
+
+    STFA_restricted = df[df['STANDALONE'] == 'Y'].reset_index(drop=True)
+    STFA_restricted['ESD'] = np.where(STFA_restricted['STFA DELTA'] == -4,get_next_business_day(1),get_next_business_day(2))
+    STFA_restricted['F ACK D'] = pd.to_datetime(STFA_restricted['F ACK D'])
+
+    df = df[df['STANDALONE'] == 'N'].reset_index(drop=True)
+    df.drop(columns={'F ACK D','STFA DELTA','STANDALONE'},inplace=True)
+
+    return df,STFA_restricted
+
 def Shippable_complete():
     
     delete_local_files()
-
+    '''
     while datetime.datetime.fromtimestamp(os.path.getmtime(share_path()+'\OM_RPAs_Files\Backup\SHIP_STATUS\SHIP_STATUS.xlsx')).date() < datetime.datetime.now().date():
         print('Waiting Shipstatus updated: '+str(datetime.datetime.now()))
         time.sleep(20)
-
+    '''
     previous_master_share()
     prev_master = pd.read_excel(path()+'\Files\\Previous_Master.xlsx')
     prev_master['WORK ORDER'] = prev_master['WORK ORDER'].astype(str).str.replace("\.0$", "",regex = True)
@@ -209,6 +238,9 @@ def Shippable_complete():
 
     master_summary_sc['PGI'] = np.where((master_summary_sc['SHIPPABLE'] != 'READY TO SHIP'), ('SHIPPED (PGI)'),('PENDING PGI'))
 
+    #STANDALONE
+    master_summary_sc,df_stfa = standalone(master_summary_sc)
+
     ship_pivot = pd.pivot_table(master_summary_sc,index = ['COMPLEXITY CATEGORY'],columns={'PGI'},values = ['OPEN QTY'],aggfunc = 'sum',margins=True,margins_name = 'TOTAL',fill_value=0)
     ship_pivot = pd.DataFrame(ship_pivot.to_records())
 
@@ -222,11 +254,13 @@ def Shippable_complete():
         mail_format.to_excel(writer,'SHIPPABLE', index = False)
         ship_pivot.to_excel(writer,'SUMMARY', index = False)
         master_summary.to_excel(writer,'RAWDATA',index = False)
+        df_stfa.to_excel(writer,'STFA RESTRICTED',index=False)
 
     with pd.ExcelWriter(path()+'\Files\\Shippable_'+format_date(3)+'(CA).xlsx') as writer_complete:
         df_case_assign.to_excel(writer_complete,'CASE ASSIGNMENT',index = False)
 
     send_email('ecmms.OM@FII-NA.com ; ecmms.shipping@fii-na.com','valeria.pereyra@fii-na.com','Shippable '+format_date(4),ship_pivot)
+    #send_email('ecmms.OM@FII-NA.com','','Shippable '+format_date(4),ship_pivot)
 
     shutil.copy(path()+'\Files\\Shippable_'+format_date(3)+'(CA).xlsx',share_path()+'\Qlik_Files')
 

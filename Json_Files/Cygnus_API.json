@@ -1,1 +1,1 @@
-{"JSONResponse":"[{\"PO\":\"52C848779\",\"CONTROL NO\":\"000120329\",\"CHANGE TYPE CODE\":\"DI\",\"SFC STATUS DES\":\"The PO does not exist in efoxSFC database \",\"PO DATE\":\"2023-03-16T14:45:27.823\",\"IS SUCCESFUL\":\"A\"}]","message":"SUCCESS","status":"SUCCESS"}
+{"JSONResponse":"[{\"PO\":\"52C848632\",\"CONTROL NO\":\"000120089\",\"CHANGE TYPE CODE\":\"SH\",\"SFC STATUS DES\":\"The PO will be hold in efoxSFC database.\",\"PO DATE\":\"2023-03-08T13:25:26.410\",\"IS SUCCESFUL\":\"A\"}]","message":"SUCCESS","status":"SUCCESS"}

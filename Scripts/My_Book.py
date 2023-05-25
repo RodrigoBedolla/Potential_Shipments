@@ -10,6 +10,7 @@ import json
 from difflib import SequenceMatcher as SM
 import sharepy
 import numpy as np
+import re
 
 #Shared Folder path
 def share_path():
@@ -579,6 +580,8 @@ def hold_tool_format(df):
     df['ID'] = df['ID'].astype(np.int64)
     df = pd.concat([df,non_wos])
 
+    df['ID'] = np.where(df['Type'] =='HOLD_PARTNO',df['ORIGINAL ID'],df['ID'])
+
     df = df[txt_array('hold_tool_columns.txt')+['ORIGINAL ID','ORIGINAL Hold Reason']]
 
     return df
@@ -980,15 +983,21 @@ def get_SOC_SAB():
     SAB_array = flat_arr[len(flat_arr)//2:]
     
     position = 0
+
     for x in SOC_array:
         x = pd.to_datetime(x)
+        
         if (x.month == current_date().month) & (x.year == current_date().year):
             SOC_date = x
+            SAB_date = pd.to_datetime(SAB_array[position])
+            
+            if pd.Timestamp(datetime.date.today()) > SAB_date:
+                SOC_date = pd.to_datetime(SOC_array[position+1])
+                SAB_date = pd.to_datetime(SAB_array[position+1])
+                
             break
         position += 1
-
-    SAB_date = pd.to_datetime(SAB_array[position])
-
+    
     return SOC_date,SAB_date
 
 
@@ -1107,3 +1116,25 @@ def Ship_History(df):
     master_unship.drop(columns='DN QTY',inplace = True)
 
     return master_unship
+
+def get_next_business_day(n):
+    current_day = datetime.date.today()
+    holidays=txt_array('holidays.txt')
+
+    next_business_day = current_day
+    count = 0
+
+    while count < n:
+        next_business_day = next_business_day + datetime.timedelta(days=+1)
+        if calendar.day_name[next_business_day.weekday()] not in ['Saturday', 'Sunday'] and next_business_day.strftime('%m/%d/%Y') not in holidays:
+            count += 1
+
+    return next_business_day
+
+def zpp9_ID_fix(df):
+
+    id_list = df['ID'].to_list()
+    my_list = [int(n) for s in id_list for n in re.findall(r'\d+', str(s))]
+    df = pd.DataFrame({'ID': my_list})
+
+    return df

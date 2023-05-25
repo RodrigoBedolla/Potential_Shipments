@@ -1,0 +1,179 @@
+<!--
+Created on : Dec 03, 2021, 2:45:22 PM
+Author     : Juan Saldivar
+
+Change History: 
+Code            CR          Name            Date        Description
+-->
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width = device-width, initial-scale = 1.0, minimum-scale = 1.0, maximum-scale = 1.0, user-scalable = no"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">   
+        <!--<meta http-equiv="content-security-policy" content="default-src 'self'">-->
+
+        <!--========== CSS ==========-->      
+        <link href="src/lib/bootstrap-5.1.3/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+        <link href="src/lib/fontawesome-6.1.1/css/all.min.css" rel="stylesheet" type="text/css"/>
+        <link href="src/lib/animate-4.1.1/animate.min.css" rel="stylesheet" type="text/css"/>
+        <link href="src/views/login/login.css" rel="stylesheet" type="text/css"/>
+        <link href="src/components/components.css" rel="stylesheet" type="text/css"/>
+        <!--========== Icon ==========-->
+        <link rel="shortcut icon" href="src/assets/images/shortcut-logo.png">        
+        <!--========== Title ==========-->        
+        <title>CyGNUS - Beyond the Cloud</title>                        
+    </head>        
+    <body>
+        <div class="cyg-Container" id ="cyg-login">         
+            <div class="cyg-subContainer"> 
+                <div class="cyg-loginLeftPad">
+                    <div class="cyg-constelations cyg-constelation_1"></div>
+                    <div class="cyg-constelations cyg-constelation_2"></div>
+                    <div class="cyg-constelations cyg-constelation_3 d-none"></div>
+                    <div class="cyg-cygnusLogo"></div>                     
+                    <img class="cyg-clientLogo animate__animated animate__fadeInRight animate__faster" :src="clients.clientlogo" v-if="clients.clientlogo"></img>
+                    <img class="cyg-clientImage animate__animated animate__fadeInRight animate__faster" :src="clients.clientImage" v-if="clients.clientImage"></img>                    
+                </div>
+            </div>
+            <div class="cyg-subContainer">  
+                <div class="cyg-mobileViewLogos">
+                    <div class="cyg-cygnusLogo"></div>                     
+                    <img class="cyg-clientLogo animate__animated animate__fadeInRight animate__faster" :src="clients.clientlogo" v-if="clients.clientlogo"></img>
+                </div>
+                <!--
+                <div id="cyg-rollBack-cygnus">
+                    <a :href="clients.urlCyGNUS3" target="_self"></a>
+                </div>
+                -->
+                <div class="cyg-loginRightPad">
+                    <div class="cyg-welcomeSpan animate__animated animate__fadeInRight animate__faster">
+                        <span>
+                            Hello!
+                        </span>
+                        <span>
+                            Sign into your account.
+                        </span>
+                    </div>
+                    <div class="cyg-loginMethods">                       
+                        <span id="cyg-msAuthentication" @click="setAuthenticationType(false,'365');" :class="{ selectedAuthType: !isStandard }">
+                            {{ externalLoginText }}
+                        </span>
+                        <cyg-internalaccess v-if="isInternalAccess">
+                             or
+                            <span id="cyg-standardAuthentication" @click="setAuthenticationType(true,'standard')" :class="{ selectedAuthType: isStandard }">
+                                {{ internalLoginText }}
+                            </span>
+                            <div id="cyg-loginControls">                                
+                                <form @submit.prevent="doLogin" v-if="isStandard" class="animate__animated animate__fadeInDown animate__faster" autocomplete="off">
+                                    <div class="cyg-loginFormInput">
+                                        <i class="fas fa-at"></i>
+                                        <input type="text" name="" id="cyg-loginUsername"  placeholder="Username"  v-model="user.userName" @change="error_message = ''" ref="userName">
+                                    </div>
+                                    <div class="cyg-loginFormInput">
+                                        <i class="fas fa-key"></i>                                        
+                                        <div class="cyg-relativePasswordHolder">
+                                            <input 
+                                                name="password" 
+                                                :type="passwordType"                                                
+                                                id="cyg-loginPassword" 
+                                                placeholder="Password" 
+                                                v-model="user.password" 
+                                                @change="error_message = ''"
+                                                />
+                                            <i 
+                                                class="cyg-passEyeToggler far" 
+                                                :class="{ 
+                                                            'fa-eye': showPassword, 
+                                                            'fa-eye-slash': !showPassword 
+                                                        }" 
+                                                @click.self="showPassword = !showPassword"
+                                                ></i>
+                                        </div>
+                                    </div>
+                                    <button id="cyg-loginButton" class="btn btn-primary"  type="submit">Login</button>
+                                    <div v-if="error_message" id="cyg-errorLoginMessage" class="animate__animated animate__fadeIn animate__faster">{{ error_message }}</div>
+                                </form>
+                            </div>
+                        </cyg-internalaccess>
+                    </div>
+
+                    <div class="cyg-loginFooter">                        
+                        <div class="cyg-storeLogos">
+                            <i class="fab fa-app-store" title="Apple App Store"></i>
+                            <i class="fab fa-google-play" title="Google Play Store"></i>
+                        </div>                                             
+                        <div class="cyg-loginTroubleshooting" @click="hasLoginIssues = true">
+                            <span>
+                                ¿Problemas para iniciar sesión?
+                            </span>                            
+                        </div>
+                        <div class="cyg-appVersion">                            
+                            <span id="cyg-webAppVersionSpan">PRD-2023051501</span>
+                        </div>                        
+                    </div>
+                </div>
+            </div>  
+            <!-- Conditional Rendering Start -->
+            <div class="cyg-client-dackdrop" @click.self="clients.showMultipleClients = !clients.showMultipleClients" 
+                                                    v-if="clients.hasMultipleClients" 
+                                                    v-show="clients.showMultipleClients">
+                <div id="cyg-clientSelection" class="animate__animated animate__slideInRight animate__faster">
+                    <div 
+                        id="cyg-clientSelection-close" 
+                        @click="clients.showMultipleClients = !clients.showMultipleClients">
+                            <i class="fas fa-arrow-left"></i>
+                    </div>
+                    <div class="cyg-clientSelectHelp">
+                        <span>Next step</span>
+                        <span>Please select a client.</span>
+                    </div>
+                    <div class="cyg-loginClients-select">
+                        <div v-for="client of clients.clientsList" 
+                             :key="client.environment" 
+                             v-if="clients.showMultipleClients" 
+                             :title="client.name" 
+                             :style="'height: calc(100%/('+((clients.clientsList.length % 2) ? clients.clientsList.length + 1 : clients.clientsList.length) +'*0.5))'"
+                             :si="clients.clientsList.length"
+                             @click="setCurrentClient(client)"
+                             >
+                            <img :src="'data:image/jpeg;base64,' + client.img_white" />                       
+                        </div>
+                    </div>
+                </div>
+            </div>                                    
+            <cyg-spinner v-if="spinner"></cyg-spinner>            
+            <cyg-login-issues v-if="hasLoginIssues" 
+                              @closeloginissues="closeloginissues" 
+                              @handleissue="handleissue"
+                              :apiURL="apiURL"
+                              ></cyg-login-issues>
+            <cyg-password-change :username="user.userName"
+                                 :oldpassword="user.password"
+                                 :activatepasswordchange="hasToChangePassword"
+                                 @togglepasswordchange="togglepasswordchange"
+                                 @togglespinner="togglespinner"
+                                 :apiURL="apiURL"
+                                 ></cyg-password-change>
+            <!-- Conditional Rendering End -->
+        </div>    
+        <script src="src/lib/bootstrap-5.1.3/js/bootstrap.bundle.min.js" type="text/javascript" defer></script>
+        <script src="src/lib/vue/vue-3.2.27/vue.global.js" type="text/javascript" defer></script>
+        <script src="src/lib/axios-0.24.0/axios.min.js" type="text/javascript" defer></script>
+        
+        <script src="src/js/alfacygniUtilities.js" type="text/javascript" defer></script>
+        <script src="src/js/login/graphConfig.js?v=PRD-2023051501" type="module" defer></script>
+                
+        <!--==================== START Azure login libraries ==================================-->        
+        <script src="src/lib/msal-1.4.4/msal.min.js" type="text/javascript" defer></script>
+        <script src="src/lib/msal-1.4.4/msal-browser.min.js" type="text/javascript" defer></script>        
+        <!--==================== END Azure login libraries ==================================-->
+    </body>
+</html>
