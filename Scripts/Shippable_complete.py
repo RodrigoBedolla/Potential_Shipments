@@ -5,6 +5,7 @@ from Hold_tool_report import hold_tool
 from Email import send_email
 import shutil
 import time
+from potential_shipments import *
 
 def case_assignnment(df_master,prev_master):
 
@@ -143,7 +144,10 @@ def Shippable_complete():
         print('Waiting Shipstatus updated: '+str(datetime.datetime.now()))
         time.sleep(20)
     '''
-    previous_master_share()
+    previous_master_share() #OUTLOOK CONFIGURATION 09192023
+    
+    shutil.copy(share_path()+'\Master Template\Master.xlsx',path()+'\Files\Previous_Master.xlsx')
+    
     prev_master = pd.read_excel(path()+'\Files\\Previous_Master.xlsx')
     prev_master['WORK ORDER'] = prev_master['WORK ORDER'].astype(str).str.replace("\.0$", "",regex = True)
     prev_master.fillna('NA',inplace = True)
@@ -170,7 +174,8 @@ def Shippable_complete():
 
     #from SHIPSTATUS get SHIP TYPE,SHIP STATUS,GENERAL STATUS,PRD STATUS,PRD BUCKET
     ship_status = pd.read_excel(share_path()+'\OM_RPAs_Files\Backup\SHIP_STATUS\\SHIP_STATUS.xlsx',sheet_name = 'SHIP STATUS',usecols = txt_array_local('Ship_columns.txt'))
-
+    
+    ship_status['PRIMARY KEY'] = ship_status['PRIMARY KEY'].astype(str).str.replace("\.0$", "",regex=True)
     master_summary = master_summary.merge(ship_status, on = 'PRIMARY KEY', how = 'left').drop_duplicates().reset_index(drop = True)
     master_summary.fillna('NA',inplace=True)
     master_summary['ITEM'] = master_summary['ITEM'].astype(str).str.replace("\.0$", "",regex=True)
@@ -239,7 +244,7 @@ def Shippable_complete():
     master_summary_sc['PGI'] = np.where((master_summary_sc['SHIPPABLE'] != 'READY TO SHIP'), ('SHIPPED (PGI)'),('PENDING PGI'))
 
     #STANDALONE
-    master_summary_sc,df_stfa = standalone(master_summary_sc)
+    #master_summary_sc,df_stfa = standalone(master_summary_sc)
 
     ship_pivot = pd.pivot_table(master_summary_sc,index = ['COMPLEXITY CATEGORY'],columns={'PGI'},values = ['OPEN QTY'],aggfunc = 'sum',margins=True,margins_name = 'TOTAL',fill_value=0)
     ship_pivot = pd.DataFrame(ship_pivot.to_records())
@@ -248,20 +253,25 @@ def Shippable_complete():
     ship_pivot['TOTAL'] = ship_pivot['TOTAL'].astype(str).str.replace("\.0$", "",regex = True)
 
     mail_format = master_summary_sc[['PO','SO','OPEN QTY','WORK ORDER','SHIPPABLE','COMPLEXITY','COMPLEXITY CATEGORY']]
-    df_case_assign = case_assignnment(master_summary,prev_master)
+    #df_case_assign = case_assignnment(master_summary,prev_master)
+    #df_case_assign = case_assignnment(master_summary,prev_master)
 
     with pd.ExcelWriter(path()+'\Files\\Shippable_'+format_date(3)+'.xlsx') as writer:
         mail_format.to_excel(writer,'SHIPPABLE', index = False)
         ship_pivot.to_excel(writer,'SUMMARY', index = False)
         master_summary.to_excel(writer,'RAWDATA',index = False)
-        df_stfa.to_excel(writer,'STFA RESTRICTED',index=False)
+        #df_stfa.to_excel(writer,'STFA RESTRICTED',index=False)
+
+    send_email('ecmms.OM@FII-NA.com ; ecmms.shipping@fii-na.com','valeria.pereyra@fii-na.com','Shippable '+format_date(4),ship_pivot)
+
+    df_case_assign = case_assignnment(master_summary,prev_master)
 
     with pd.ExcelWriter(path()+'\Files\\Shippable_'+format_date(3)+'(CA).xlsx') as writer_complete:
         df_case_assign.to_excel(writer_complete,'CASE ASSIGNMENT',index = False)
 
-    send_email('ecmms.OM@FII-NA.com ; ecmms.shipping@fii-na.com','valeria.pereyra@fii-na.com','Shippable '+format_date(4),ship_pivot)
-    #send_email('ecmms.OM@FII-NA.com','','Shippable '+format_date(4),ship_pivot)
-
-    shutil.copy(path()+'\Files\\Shippable_'+format_date(3)+'(CA).xlsx',share_path()+'\Qlik_Files')
+    try:
+        potential_shipments()
+    except Exception as e:
+        print('New Shipments Overview Error: '+str(e))
 
 #Shippable_complete()

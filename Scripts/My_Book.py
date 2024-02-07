@@ -247,7 +247,7 @@ def primary_key(df):
             df.loc[i,'PRIMARY KEY'] = work_order_key
     
     df = df[ ['PRIMARY KEY'] + [ col for col in df.columns if col != 'PRIMARY KEY' ] ]
-    df['PRIMARY KEY'] = df['PRIMARY KEY'].astype(str).str.replace('.0', '', regex=False)
+    df['PRIMARY KEY'] = df['PRIMARY KEY'].astype(str).str.replace("\.0$", "",regex=True)
 
     return df
 
@@ -971,10 +971,9 @@ def previous_master_share():
     file_directory = path()+'\Files'
 
     site = 'https://fiicorp.sharepoint.com/:x:/r/sites/CABGL10/Departments/Order%20Management/01%20Master%20Consolidado/Master%20Final/Master%20'+previous_labor_day().strftime('%m%d%Y')+'.xlsx'
-    s = sharepy.connect(server,txt_array('Credentials.txt')[2],txt_array('Credentials.txt')[3])
+    s = sharepy.connect(server,txt_array('Credentials.txt')[0],txt_array('Credentials.txt')[1])
 
     s.getfile_sharepy_filename(site,filename,file_directory)
-
 
 def get_SOC_SAB():
 
@@ -1138,3 +1137,6 @@ def zpp9_ID_fix(df):
     df = pd.DataFrame({'ID': my_list})
 
     return df
+
+#from datetime import  timedelta
+#print(datetime.datetime.today() + datetime.timedelta(days=2))

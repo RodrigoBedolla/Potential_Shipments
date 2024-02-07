@@ -36,11 +36,14 @@ def job():
     try:
 
         if error_count == 0:
-
+            #schedule.every().hour.at(":27").do(main)
             schedule.every().hour.at(":59").do(main)
-            schedule.every().day.at("07:25").do(main)
+            schedule.every().day.at("07:26").do(main)
+        
+            #schedule.every().monday.at("05:58").do(main)
+            #schedule.every().monday.at("06:58").do(main)
+            #schedule.every().monday.at("07:26").do(main)
 
-            
         elif error_count <= 5:
 
             schedule.every(5).minutes.do(main)

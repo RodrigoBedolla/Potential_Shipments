@@ -13,9 +13,10 @@ def po_validation(df):
     po_list = df['ID'].drop_duplicates()
 
     iteration = 1
-
+    expected_cols = ['PO','CONTROL NO','CHANGE TYPE','CODE','SFC STATUS DES','PO DATE','IS SUCCESFUL','HPE RESTRICTIONS','HPE RESTRICTIONS','DETAILS']
+    priority_codes = pd.DataFrame(columns=expected_cols)
     for i in po_list:
-
+        print(i)
         final_df = api_request('PO',i,'860Codes','SHORT','')
 
         if iteration == 1:
@@ -28,7 +29,7 @@ def po_validation(df):
             priority_codes = pd.concat(frames)
 
         iteration += 1
-    
+    print(priority_codes)
     priority_codes['PO DATE'] = datetime_convertion(priority_codes,'PO DATE')
     priority_codes['CONTROL NO']  = priority_codes['CONTROL NO'].astype(int64)
     

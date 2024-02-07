@@ -28,7 +28,7 @@ def hold_tool():
     initial_date = (date.today() + relativedelta(months=-9)).strftime("%Y-%m-%d")
 
     final_date = (date.today()).strftime("%Y-%m-%d")
-
+    print(str(initial_date)+' | Final: '+str(final_date))
     subprocess.call('sh bash_scripts/request.sh ' + initial_date + ' ' + final_date + ' HOLD_TOOL')   
 
     data = open(path()+'\Json_Files\\cygnus_files.json','r') #read json file downloaded
@@ -42,6 +42,7 @@ def hold_tool():
     df.columns = txt_array('default_Hold_tool_report.txt')
 
     df = df[txt_array('hold_tool_columns.txt')]
+    df.to_excel(path()+'\Files\Hold_T.xlsx', index=False)
     df = hold_tool_format(df)
 
     zpp9 = hold_by_pn(df)
@@ -99,7 +100,7 @@ def hold_tool():
 
     df_final = pd.concat([df_po,df_wo,df_sku])
     df_final.to_excel(path()+'\Files\hold_tool_report.xlsx',index= False)
-
+    print(df_po)
     po_priority_code = po_validation(df_po)
     code_holds(po_priority_code)
 
