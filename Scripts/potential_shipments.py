@@ -3,7 +3,7 @@ import shutil
 
 def potential_shipments():
 
-    mail_format = pd.read_excel(path()+'\Files\Shippable_'+str(format_date(3))+'.xlsx', sheet_name='SHIPPABLE')
+    mail_format = pd.read_excel(path()+'\Files\Shippable_'+str(format_date(3))+'.xlsx', sheet_name='SHIPPABLE',usecols=['WORK ORDER','CLOSED DATE','AGING','CATEGORY','PRIORITY','ERROR PRICE'])
     master_summary = pd.read_excel(path()+'\Files\Shippable_'+str(format_date(3))+'.xlsx', sheet_name='RAWDATA')
     master_base = pd.read_excel(share_path()+'\Master Template\master_base.xlsx', usecols=['WORK ORDER','STANDALONE']).drop_duplicates(subset='WORK ORDER')
     previous_master = pd.read_excel(path()+'\Files\Previous_Master.xlsx', usecols=['WORK ORDER','STATUS']).drop_duplicates(subset='WORK ORDER')
@@ -36,7 +36,9 @@ def potential_shipments():
     master_summary['CD FLAG'] = master_summary['CD FLAG'].fillna('N')
     master_summary['CD_FLAG_BUCKET'] = np.where(master_summary['PRODUCTION BUCKET']=='CANCELLED','CANCELLED',master_summary['CD_FLAG_BUCKET'])
     master_summary = master_summary.merge(ship_status.drop_duplicates(subset=['WORK ORDER']),on='WORK ORDER', how='left').reset_index(drop=True)
+    master_summary = master_summary.merge(mail_format.drop_duplicates(subset=['WORK ORDER']),on='WORK ORDER', how='left').reset_index(drop=True)
     master_summary.fillna('-', inplace=True)
+    master_summary = master_summary.drop_duplicates(subset='WORK ORDER').reset_index(drop=True)
     master_summary.to_excel(path()+'\Files\Qlik_Shippable_'+str(format_date(3))+'.xlsx', index=False)
 
     shutil.copy(path()+'\Files\Qlik_Shippable_'+str(format_date(3))+'.xlsx',share_path()+'\Qlik_Files')

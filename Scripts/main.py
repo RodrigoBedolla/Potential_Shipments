@@ -4,7 +4,7 @@
 
 import schedule
 import time
-from Shippable_complete import *
+from Shippable import *
 from Execution_log import *
 from Email_Alerts import *
 
@@ -36,13 +36,13 @@ def job():
     try:
 
         if error_count == 0:
-            #schedule.every().hour.at(":27").do(main)
+            
             schedule.every().hour.at(":59").do(main)
             schedule.every().day.at("07:26").do(main)
-        
-            #schedule.every().monday.at("05:58").do(main)
-            #schedule.every().monday.at("06:58").do(main)
-            #schedule.every().monday.at("07:26").do(main)
+            schedule.every().day.at("08:26").do(main)
+            schedule.every().day.at("09:26").do(main)
+            schedule.every().day.at("10:26").do(main)
+            schedule.every().day.at("11:26").do(main)
 
         elif error_count <= 5:
 

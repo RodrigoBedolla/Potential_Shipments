@@ -22,32 +22,23 @@ def hold_by_pn(df):
     return df
 
 def hold_tool():
-
-    cookie_cygnus()
   
-    initial_date = (date.today() + relativedelta(months=-9)).strftime("%Y-%m-%d")
-
+    initial_date = (date.today() + relativedelta(months=-6)).strftime("%Y-%m-%d")
     final_date = (date.today()).strftime("%Y-%m-%d")
-    print(str(initial_date)+' | Final: '+str(final_date))
-    subprocess.call('sh bash_scripts/request.sh ' + initial_date + ' ' + final_date + ' HOLD_TOOL')   
+    subprocess.call('sh bash_scripts/request.sh ' + initial_date + ' ' + final_date + ' HOLD_TOOL')  
+    df_1 = hold_tool_rpt()
 
-    data = open(path()+'\Json_Files\\cygnus_files.json','r') #read json file downloaded
-    json_array = json.load(data)
-    jsonf = json.dumps(json_array[1]) #get inormation to dataframe  
-    df = pd.read_json(StringIO(jsonf))
-
-    df.reset_index(drop=True,inplace=True)
-    
-    df = drop_list_of_columns(['change','row_action','objID'],df)
-    df.columns = txt_array('default_Hold_tool_report.txt')
-
-    df = df[txt_array('hold_tool_columns.txt')]
-    df.to_excel(path()+'\Files\Hold_T.xlsx', index=False)
-    df = hold_tool_format(df)
-
-    zpp9 = hold_by_pn(df)
-
-    df = df.merge(zpp9[['ID','Order']],on='ID',how='left')
+    initial_date = (date.today() + relativedelta(months=-12)).strftime("%Y-%m-%d")
+    final_date = (date.today() + relativedelta(months=-6)).strftime("%Y-%m-%d")
+    subprocess.call('sh bash_scripts/request.sh ' + initial_date + ' ' + final_date + ' HOLD_TOOL')  
+    df_2 = hold_tool_rpt()
+   
+    df = pd.concat([df_1,df_2]).drop_duplicates().reset_index(drop=True)
+    try:
+        zpp9 = hold_by_pn(df)
+        df = df.merge(zpp9[['ID','Order']],on='ID',how='left')
+    except:
+        df['Order'] = 0
     df.fillna(0,inplace=True)
 
     df['Type'] = np.where(df['Type'].str.contains('PARTNO'),df['Type'].astype(str) + ': ' + df['ID'].astype(str),df['Type'])
@@ -56,6 +47,13 @@ def hold_tool():
     #-------------------------------------------------------------------------------
    
     df_master = pd.read_excel(share_path()+'\Master Template\\master_base.xlsx')
+
+    #-----NonCTR added 01/15/2025--------- 
+    df_non_ctr = non_ctr(df_master)
+    df_non_ctr['HOLD TYPE'] = 'Type: HOLD_PO | Hold Date: '+current_date().strftime('%m/%d/%Y')+' | Hold Description: '+df_non_ctr['DESCRIPTION']+' | Part No: '+df_non_ctr['PART NO']+' | Hold Reason: NON CTR'
+    df_non_ctr = df_non_ctr[['PO','HOLD TYPE']]
+    df_non_ctr.rename(columns={'PO':'ID'},inplace=True)
+    df_non_ctr = df_non_ctr.groupby('ID')['HOLD TYPE'].apply(lambda x: '\n'.join(x)).reset_index()
 
     for i in range(0,len(df.index)):
 
@@ -81,7 +79,8 @@ def hold_tool():
     df = Hold_type_column(df)
     df_po = df[df['HOLD LEVEL'].str.contains('PO') == True].reset_index(drop= True)
     df_po = df_po.rename(columns = {'ID':'PO'})
-    df_po = pd.merge(df_po,df_master['PO'], on= ['PO'], how= 'inner').drop_duplicates().reset_index(drop=True)
+    df_po['PO'] = df_po['PO'].astype(str).str.replace("\.0$", "",regex=True)
+    df_po = pd.merge(df_po,df_master['PO'].astype(str).str.replace("\.0$", "",regex=True), on= ['PO'], how= 'inner').drop_duplicates().reset_index(drop=True)
     df_po = df_po.rename(columns = {'PO':'ID'})
 
     df_wo = df[df['HOLD LEVEL'].str.contains('WO') == True].reset_index(drop= True)
@@ -98,12 +97,12 @@ def hold_tool():
     df_sku.insert(0, 'WORK ORDER', (df_sku.pop('WORK ORDER')))
     df_sku = df_sku.rename(columns = {'WORK ORDER':'ID'})
 
-    df_final = pd.concat([df_po,df_wo,df_sku])
-    df_final.to_excel(path()+'\Files\hold_tool_report.xlsx',index= False)
+    df_final = pd.concat([df_po,df_wo,df_sku,df_non_ctr])
+    df_final.to_excel(share_path()+'\Master_Analysis\hold_tool_report.xlsx',index= False)
+    
     print(df_po)
     po_priority_code = po_validation(df_po)
     code_holds(po_priority_code)
 
-    cyg_logout()
 
 #hold_tool()

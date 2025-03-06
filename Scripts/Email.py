@@ -55,7 +55,7 @@ def send_email(recipient_email,cc_recipient_email,subject,df):
 
             <br><br>
             Saludos/Regards!<br>
-            Rodrigo Bedolla<br>
+            Erik Carbajal<br>
             <b>OM</b></font>
 	    </body>
     </html>

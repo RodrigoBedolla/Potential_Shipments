@@ -11,6 +11,7 @@ from difflib import SequenceMatcher as SM
 import sharepy
 import numpy as np
 import re
+from io import StringIO
 
 #Shared Folder path
 def share_path():
@@ -415,7 +416,7 @@ def delete_local_files(): #Delete file from 'Files' folder for specific project
 
     log_file_route = path()+'\Files'
     for i in os.listdir(log_file_route): 
-        if (i != 'Shippable_'+format_date(3)+'.xlsx') & (i != 'Master_columns.txt') & (i != 'Summary_columns.txt') & (i != 'Ship_columns.txt') & (i != 'RAWDATA.xlsx') & (i != 'Shippable_'+format_date(3)+'(CA).xlsx'):
+        if (i != 'Shippable_'+format_date(3)+'.xlsx') & (i != 'Master_columns.txt') & (i != 'Master_columns_temp.txt') & (i != 'Summary_columns.txt')  & (i != 'Summary_columns_temp.txt') & (i != 'Ship_columns.txt') & (i != 'RAWDATA.xlsx') & (i != 'Shippable_'+format_date(3)+'(CA).xlsx'):
             print("Removed: "+i)
             os.remove(path()+'\Files\\' + i)
 
@@ -551,6 +552,12 @@ def coois():
 
     return coois
 
+def remove_decimals(df,column_name):
+ 
+    df[column_name] = df[column_name].astype(str).str.replace('\.0$', '', regex=True)
+ 
+    return df
+
 def hold_tool_format(df):
 
     df.rename(columns={'ID': 'ORIGINAL ID', 'Hold Reason': 'ORIGINAL Hold Reason'}, inplace=True)
@@ -574,7 +581,8 @@ def hold_tool_format(df):
             df.loc[i,'Hold Reason'] = 'Hold by 850 sERP'
         else:
             df.loc[i,'Hold Reason'] = hold_reason
-
+    
+    df['ID'] = df['ID'].astype(str)
     non_wos = df[~df['ID'].str.isnumeric()]
     df = df[df['ID'].str.isnumeric()]
     df['ID'] = df['ID'].astype(np.int64)
@@ -849,8 +857,6 @@ def signals(df ,column, trant_type, report, signal):
         df1=[str(int) for int in df1]
         cyg_input = ",".join(df1)
 
-        print(cyg_input)
-
         if batch==0:
 
             final_df=api_request(column,cyg_input, trant_type, report, signal)
@@ -886,8 +892,12 @@ def datetime_convertion(df,column):
 def fill_holds(df):
 
     hpe_Holds_s4 = pd.read_excel(share_path()+'\Master_Analysis\PO_VIEWER.xlsx', usecols=['WORK ORDER','HPE RESTRICTIONS'])
-    hpe_Holds_fusion = pd.read_excel(path()+'\Files\860_Holds.xlsx', usecols=['PO','HPE RESTRICTIONS'])
-    hold_tool_cygnus = pd.read_excel(path()+'\Files\hold_tool_report.xlsx', usecols=['ID','HOLD TYPE'])
+    try:
+        hpe_Holds_fusion = pd.read_excel(path()+'\Files\860_Holds.xlsx', usecols=['PO','HPE RESTRICTIONS'])
+        hold_tool_cygnus = pd.read_excel(path()+'\Files\hold_tool_report.xlsx', usecols=['ID','HOLD TYPE'])
+    except:
+        hpe_Holds_fusion = pd.read_excel(share_path()+'\Master_Analysis\860_Holds.xlsx', usecols=['PO','HPE RESTRICTIONS'])
+        hold_tool_cygnus = pd.read_excel(share_path()+'\Master_Analysis\hold_tool_report.xlsx', usecols=['ID','HOLD TYPE'])
 
     df['WORK ORDER'] = df['WORK ORDER'].astype(str).str.replace('.0', '', regex=False)
     hpe_Holds_s4['WORK ORDER'] = hpe_Holds_s4['WORK ORDER'].astype(str).str.replace('.0', '', regex=False)
@@ -1138,5 +1148,96 @@ def zpp9_ID_fix(df):
 
     return df
 
-#from datetime import  timedelta
-#print(datetime.datetime.today() + datetime.timedelta(days=2))
+def analysis_level_column_id(df):
+
+    df['PO + ITEM'] = df['PO'].astype(str) + df['ITEM'].astype(str)
+    nested_items = df['PO + ITEM'][(df['SHIP TYPE']=='SP')].to_list()
+    nested_items = set(x for x in nested_items if nested_items.count(x) > 1)
+    df['ANALYSIS_LEVEL'] = np.where(df['SHIP TYPE']=='SC',df['PO'],np.where(df['PO + ITEM'].isin(nested_items),df['PO + ITEM'],df['WORK ORDER']))
+
+    return df
+
+def cd_flag_dates_aligment(df,date_column):
+
+    max_values = df.groupby('ANALYSIS_LEVEL')[date_column].max()
+    #max_values = max_values.reset_index().rename(columns={date_column: 'MAX DELIVERY DATE'})
+    df = drop_list_of_columns([date_column],df)
+    df = df.merge(max_values, on='ANALYSIS_LEVEL', how='left')
+
+    return df
+
+def prd_order_list(df):
+
+    df['WORK ORDER'] = df['WORK ORDER'].str.zfill(12)
+    df.rename(columns={'WORK ORDER': 'WO'}, inplace=True)
+    df = signals(df ,'WO','ProductionOrderList' ,'SHORT', '')
+
+    if df.empty:
+        return pd.DataFrame(columns = ['WORK ORDER','PRD ORDER LIST','EVENT','CLOSED DATE'])
+    else:
+        df['WO'] = df['WO'].str.replace(r'^(0+)', '', regex=True).fillna('0')
+        df['CLOSE DATE'] = pd.to_datetime(df['CLOSE DATE'])
+
+        df=df[['WO','STATUS','BUCKET','CLOSE DATE']]
+        df.columns=['WORK ORDER','PRD ORDER LIST','EVENT','CLOSED DATE']
+        df.reset_index(drop=True,inplace=True)
+            
+        df['WORK ORDER'] = df['WORK ORDER'].astype(np.int64)
+
+        return df
+    
+def format_timedelta(td):
+    days = td.days
+    hours, remainder = divmod(td.seconds, 3600)
+    #minutes, _ = divmod(remainder, 60)
+    if days == 0:
+        return f"{hours} HRS"
+    else:
+        return f"{days} D {hours} HRS"
+
+def hold_tool_rpt():
+ 
+    data = open(path()+'\Json_Files\\Cygnus_Files.json','r',encoding='utf-8') #read json file downloaded
+    json_array = json.load(data)
+    jsonf = json.dumps(json_array[1]) #get inormation to dataframe  
+    df = pd.read_json(StringIO(jsonf))
+ 
+    df.reset_index(drop=True,inplace=True)
+    df = drop_list_of_columns(['change','row_action','objID'],df)
+    df.columns = txt_array('default_Hold_tool_report.txt')
+ 
+    df = df[txt_array('hold_tool_columns.txt')]
+    df = hold_tool_format(df)
+ 
+    return df
+
+def wo_error_price():
+
+    with open(share_path()+'\\Prices\\ZS189_ERRORS.txt', 'r') as file:
+        # Read all lines from the file
+        lines = file.readlines()
+    return [int(line.strip()) for line in lines]
+
+def sql_parameters():
+    """
+    Reads the database connection string from a text file and returns it.
+
+    Returns:
+        str: The database connection string.
+    """
+    with open(share_path()+'\\Files_Format\\db_connection.txt', 'r') as file:
+        conn_str = ''.join(line.strip() for line in file)
+
+    return conn_str
+
+def non_ctr(df):
+
+    df = signals(df ,'PO','DirtyNonCTR' ,'SHORT', '')
+
+    if df.empty:
+        return pd.DataFrame(columns=['PO','MATERIAL'])
+    else:
+        df.rename(columns = {'PARTNO':'PART NO'}, inplace = True)
+        df['PO'] = df['PO'].astype(np.int64)
+
+        return df

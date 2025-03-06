@@ -5,6 +5,7 @@
 from My_Book import txt_array_2d, format_date, share_path
 import pandas as pd
 from datetime import datetime
+import time
 
 def get_time():
 
@@ -41,7 +42,18 @@ def Execution_log(start, flag, error):
                                             'RELEASE DATE' : txt_array_2d('Description_of _RPAs_releases.txt')[6][2], 'START' : start, 'FINISH' : current_time,
                                             'EXECUTION TIME' : td_mins,'PASS/FAIL' : flag,'FAILURE DESCRIPTION' : error}])], ignore_index=True)
 
-    execution_log.to_excel(share_path()+'\Execution_log\Execution_log.xlsx', index=False)
+    # Number of retries and delay in seconds
+    retries = 5
+    delay = 10
+
+    for i in range(retries):
+        try:
+            execution_log.to_excel(share_path()+'\Execution_log\Execution_log.xlsx', index=False)
+            break  # Exit loop if successful
+        except PermissionError:
+            print(f"Retrying in {delay} seconds...[{i + 1} of {retries}]")
+            time.sleep(delay)  # Wait before retrying
+
 
     return_df = execution_log.iloc[-1:]
 
