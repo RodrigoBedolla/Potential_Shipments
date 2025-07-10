@@ -4,7 +4,7 @@ import numpy as np
 
 def case_assignnment(df_master,prev_master):
 
-    df_master['WORK ORDER'] = df_master['WORK ORDER'].astype(str).str.replace("\.0$", "",regex = True)
+    df_master['WORK ORDER'] = df_master['WORK ORDER'].astype(str).str.replace(r'\.0$', "",regex = True)
     df_master = df_master.merge(prev_master[['WORK ORDER','SCHEDULED DATE','STATUS']],on = 'WORK ORDER', how = 'left')
     df_master.fillna('NA',inplace = True)
     df_master = df_master[(df_master['ITEM'] != 'NA')].reset_index(drop = True)
@@ -77,7 +77,7 @@ def case_assignnment(df_master,prev_master):
     df_master.drop(columns=['SHORT'],inplace = True)
 
     df_master = priority_bucket(df_master)
-    df_master.to_excel(path()+'\Files\\Cases_assignment.xlsx',index = False)
+    df_master.to_excel(path()+r'\Files\\Cases_assignment.xlsx',index = False)
 
-#df_master = pd.read_excel(path()+'\Files\\RAWDATA.xlsx')
+#df_master = pd.read_excel(path()+r'\Files\\RAWDATA.xlsx')
 #case_assignnment(df_master)

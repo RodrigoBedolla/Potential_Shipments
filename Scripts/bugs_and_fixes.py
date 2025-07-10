@@ -7,5 +7,5 @@ def partial_shipments(master,ship_status):
 
     master.loc[master['PRIMARY KEY'] == '141173653', 'OPEN QTY'] = wo_1
     master.loc[master['PRIMARY KEY'] == '141173652', 'OPEN QTY'] = wo_2
-    ship_status.to_excel(path()+'\Files\Revision.xlsx')
+    ship_status.to_excel(path()+r'\Files\Revision.xlsx')
     return master

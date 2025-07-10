@@ -46,7 +46,7 @@ def hold_tool():
 
     #-------------------------------------------------------------------------------
    
-    df_master = pd.read_excel(share_path()+'\Master Template\\master_base.xlsx')
+    df_master = pd.read_excel(share_path()+r'\Master Template\\master_base.xlsx')
 
     #-----NonCTR added 01/15/2025--------- 
     df_non_ctr = non_ctr(df_master)
@@ -79,8 +79,8 @@ def hold_tool():
     df = Hold_type_column(df)
     df_po = df[df['HOLD LEVEL'].str.contains('PO') == True].reset_index(drop= True)
     df_po = df_po.rename(columns = {'ID':'PO'})
-    df_po['PO'] = df_po['PO'].astype(str).str.replace("\.0$", "",regex=True)
-    df_po = pd.merge(df_po,df_master['PO'].astype(str).str.replace("\.0$", "",regex=True), on= ['PO'], how= 'inner').drop_duplicates().reset_index(drop=True)
+    df_po['PO'] = df_po['PO'].astype(str).str.replace(r'\.0$', "",regex=True)
+    df_po = pd.merge(df_po,df_master['PO'].astype(str).str.replace(r'\.0$', "",regex=True), on= ['PO'], how= 'inner').drop_duplicates().reset_index(drop=True)
     df_po = df_po.rename(columns = {'PO':'ID'})
 
     df_wo = df[df['HOLD LEVEL'].str.contains('WO') == True].reset_index(drop= True)
@@ -98,7 +98,7 @@ def hold_tool():
     df_sku = df_sku.rename(columns = {'WORK ORDER':'ID'})
 
     df_final = pd.concat([df_po,df_wo,df_sku,df_non_ctr])
-    df_final.to_excel(share_path()+'\Master_Analysis\hold_tool_report.xlsx',index= False)
+    df_final.to_excel(share_path()+r'\Master_Analysis\hold_tool_report.xlsx',index= False)
     
     print(df_po)
     po_priority_code = po_validation(df_po)

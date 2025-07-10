@@ -67,7 +67,7 @@ def saplogin(file_flag):
          session.findById("wnd[0]/usr/radR3").setFocus()
          session.findById("wnd[0]/usr/btn%_P_PO_%_APP_%-VALU_PUSH").press()
          session.findById("wnd[1]/tbar[0]/btn[23]").press()
-         session.findById("wnd[2]/usr/ctxtRLGRAP-FILENAME").text = path()+'\Files\PO.txt'
+         session.findById("wnd[2]/usr/ctxtRLGRAP-FILENAME").text = path()+r'\Files\PO.txt'
          session.findById("wnd[2]/usr/ctxtRLGRAP-FILENAME").caretPosition = 49
          session.findById("wnd[2]/tbar[0]/btn[0]").press()
          session.findById("wnd[1]/tbar[0]/btn[8]").press()
@@ -77,7 +77,7 @@ def saplogin(file_flag):
          session.findById("wnd[1]/usr/sub:SAPLSPO5:0101/radSPOPLI-SELFLAG[1,0]").select()
          session.findById("wnd[1]/usr/sub:SAPLSPO5:0101/radSPOPLI-SELFLAG[1,0]").setFocus()
          session.findById("wnd[1]/tbar[0]/btn[0]").press()
-         session.findById("wnd[1]/usr/ctxtRLGRAP-FILENAME").text = path()+'\Files\zsd5.xls'
+         session.findById("wnd[1]/usr/ctxtRLGRAP-FILENAME").text = path()+r'\Files\zsd5.xls'
          session.findById("wnd[1]/usr/ctxtRLGRAP-FILENAME").caretPosition = 50
          session.findById("wnd[1]/tbar[0]/btn[0]").press()
          session.findById("wnd[1]/tbar[0]/btn[0]").press()
@@ -95,7 +95,7 @@ def saplogin(file_flag):
          session.findById("wnd[0]/usr/radR4").setFocus()
          session.findById("wnd[0]/usr/btn%_S_SO_%_APP_%-VALU_PUSH").press()
          session.findById("wnd[1]/tbar[0]/btn[23]").press()
-         session.findById("wnd[2]/usr/ctxtRLGRAP-FILENAME").text = path()+'\Files\SO.txt'
+         session.findById("wnd[2]/usr/ctxtRLGRAP-FILENAME").text = path()+r'\Files\SO.txt'
          session.findById("wnd[2]/usr/ctxtRLGRAP-FILENAME").caretPosition = 49
          session.findById("wnd[2]/tbar[0]/btn[0]").press()
          session.findById("wnd[1]/tbar[0]/btn[8]").press()
@@ -105,7 +105,7 @@ def saplogin(file_flag):
          session.findById("wnd[1]/usr/sub:SAPLSPO5:0101/radSPOPLI-SELFLAG[1,0]").select()
          session.findById("wnd[1]/usr/sub:SAPLSPO5:0101/radSPOPLI-SELFLAG[1,0]").setFocus()
          session.findById("wnd[1]/tbar[0]/btn[0]").press()
-         session.findById("wnd[1]/usr/ctxtRLGRAP-FILENAME").text = path()+'\Files\zsd6.xls'
+         session.findById("wnd[1]/usr/ctxtRLGRAP-FILENAME").text = path()+r'\Files\zsd6.xls'
          session.findById("wnd[1]/usr/ctxtRLGRAP-FILENAME").caretPosition = 50
          session.findById("wnd[1]").sendVKey(0)
          session.findById("wnd[1]/tbar[0]/btn[0]").press()
@@ -117,7 +117,7 @@ def saplogin(file_flag):
          session.findById("wnd[0]/usr/ctxtS_SO-LOW").caretPosition = 0
          session.findById("wnd[0]/usr/btn%_S_SO_%_APP_%-VALU_PUSH").press()
          session.findById("wnd[1]/tbar[0]/btn[23]").press()
-         session.findById("wnd[2]/usr/ctxtRLGRAP-FILENAME").text = path()+'\Files\SO.txt'
+         session.findById("wnd[2]/usr/ctxtRLGRAP-FILENAME").text = path()+r'\Files\SO.txt'
          session.findById("wnd[2]/usr/ctxtRLGRAP-FILENAME").caretPosition = 49
          session.findById("wnd[2]/tbar[0]/btn[0]").press()
          session.findById("wnd[1]/tbar[0]/btn[8]").press()
@@ -127,7 +127,7 @@ def saplogin(file_flag):
          session.findById("wnd[1]/usr/sub:SAPLSPO5:0101/radSPOPLI-SELFLAG[1,0]").select()
          session.findById("wnd[1]/usr/sub:SAPLSPO5:0101/radSPOPLI-SELFLAG[1,0]").setFocus()
          session.findById("wnd[1]").sendVKey(0)
-         session.findById("wnd[1]/usr/ctxtRLGRAP-FILENAME").text = path()+'\Files\zsd6a.xls'
+         session.findById("wnd[1]/usr/ctxtRLGRAP-FILENAME").text = path()+r'\Files\zsd6a.xls'
          session.findById("wnd[1]/usr/ctxtRLGRAP-FILENAME").caretPosition = 51
          session.findById("wnd[1]/tbar[0]/btn[0]").press()
          session.findById("wnd[1]/tbar[0]/btn[0]").press()
@@ -145,7 +145,7 @@ def saplogin(file_flag):
          session.findById("wnd[0]/usr/ssub%_SUBSCREEN_TOPBLOCK:PPIO_ENTRY:1100/ctxtPPIO_ENTRY_SC1100-ALV_VARIANT").caretPosition = 3
          session.findById("wnd[0]/usr/tabsTABSTRIP_SELBLOCK/tabpSEL_00/ssub%_SUBSCREEN_SELBLOCK:PPIO_ENTRY:1200/btn%_S_KDAUF_%_APP_%-VALU_PUSH").press()
          session.findById("wnd[1]/tbar[0]/btn[23]").press()
-         session.findById("wnd[2]/usr/ctxtRLGRAP-FILENAME").text = path()+'\Files\SO.txt'
+         session.findById("wnd[2]/usr/ctxtRLGRAP-FILENAME").text = path()+r'\Files\SO.txt'
          session.findById("wnd[2]/usr/ctxtRLGRAP-FILENAME").caretPosition = 72
          session.findById("wnd[2]/tbar[0]/btn[0]").press()
          session.findById("wnd[1]/tbar[0]/btn[8]").press()
@@ -157,7 +157,7 @@ def saplogin(file_flag):
          session.findById("wnd[1]/usr/sub:SAPLSPO5:0101/radSPOPLI-SELFLAG[1,0]").select()
          session.findById("wnd[1]/usr/sub:SAPLSPO5:0101/radSPOPLI-SELFLAG[1,0]").setFocus()
          session.findById("wnd[1]/tbar[0]/btn[0]").press()
-         session.findById("wnd[1]/usr/ctxtRLGRAP-FILENAME").text = path()+'\Files\coois.xls'
+         session.findById("wnd[1]/usr/ctxtRLGRAP-FILENAME").text = path()+r'\Files\coois.xls'
          session.findById("wnd[1]/usr/ctxtRLGRAP-FILENAME").caretPosition = 75
          session.findById("wnd[1]/tbar[0]/btn[0]").press()
          session.findById("wnd[1]/tbar[0]/btn[0]").press()
@@ -173,7 +173,7 @@ def saplogin(file_flag):
          session.findById("wnd[0]/usr/ctxtSP$00003-LOW").text = "S315"
          session.findById("wnd[0]/usr/btn%_SP$00001_%_APP_%-VALU_PUSH").press()
          session.findById("wnd[1]/tbar[0]/btn[23]").press()
-         session.findById("wnd[2]/usr/ctxtRLGRAP-FILENAME").text = path()+'\Files\ID.txt'
+         session.findById("wnd[2]/usr/ctxtRLGRAP-FILENAME").text = path()+r'\Files\ID.txt'
          session.findById("wnd[2]/usr/ctxtRLGRAP-FILENAME").caretPosition = 75
          session.findById("wnd[2]/tbar[0]/btn[0]").press()
          session.findById("wnd[1]/tbar[0]/btn[8]").press()
@@ -182,7 +182,7 @@ def saplogin(file_flag):
          session.findById("wnd[1]/usr/sub:SAPLSPO5:0101/radSPOPLI-SELFLAG[1,0]").select()
          session.findById("wnd[1]/usr/sub:SAPLSPO5:0101/radSPOPLI-SELFLAG[1,0]").setFocus()
          session.findById("wnd[1]/tbar[0]/btn[0]").press()
-         session.findById("wnd[1]/usr/ctxtRLGRAP-FILENAME").text = path()+'\Files\zpp9.xls'
+         session.findById("wnd[1]/usr/ctxtRLGRAP-FILENAME").text = path()+r'\Files\zpp9.xls'
          session.findById("wnd[1]/usr/ctxtRLGRAP-FILENAME").caretPosition = 80
          session.findById("wnd[1]/tbar[0]/btn[0]").press()
 

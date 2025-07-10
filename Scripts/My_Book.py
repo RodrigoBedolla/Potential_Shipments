@@ -27,7 +27,7 @@ def share_path():
 
 #Convert xls file to xlsx file
 def convert_xlsx(file):
-    fname = path()+'\Files\\'+file
+    fname = path()+r'\Files\\'+file
     excel = win32.gencache.EnsureDispatch('Excel.Application')
     wb = excel.Workbooks.Open(fname)
 
@@ -40,7 +40,7 @@ def convert_xlsx(file):
 #Convert txt File 1 dimention to a array list
 def txt_array(z_file):
     
-    with open(share_path()+'\Files_Format\\'+z_file) as f:
+    with open(share_path()+r'\Files_Format\\'+z_file) as f:
         content = f.readlines()
         # you may also want to remove whitespace characters like `\n` at the end of each line
     content = [x.strip() for x in content]
@@ -49,7 +49,7 @@ def txt_array(z_file):
 #Convert txt File 1 dimention to a array list
 def txt_array_local(z_file):
     
-    with open(path()+'\Files\\'+z_file) as f:
+    with open(path()+r'\Files\\'+z_file) as f:
         content = f.readlines()
         # you may also want to remove whitespace characters like `\n` at the end of each line
     content = [x.strip() for x in content]
@@ -60,12 +60,12 @@ def create_txt(value,file_name,write_tipe):
 
     if write_tipe == 'append':
 
-        with open(share_path()+'\Files_Format\\'+file_name, 'a') as f:
+        with open(share_path()+r'\Files_Format\\'+file_name, 'a') as f:
             f.write('\n'+value)
     
     else:
 
-        with open(share_path()+'\Files_Format\\'+file_name, 'w') as f:
+        with open(share_path()+r'\Files_Format\\'+file_name, 'w') as f:
             f.write(value)
 
 #ZSD5 Format
@@ -143,7 +143,7 @@ def sap_input(df,column):
     else:
         df_sales_orders = df[column].drop_duplicates().astype(str)
 
-    df_sales_orders.to_csv(path()+'\Files\\' + str(column) + '.txt', header=None, index=None) #Guardar archivo de txt
+    df_sales_orders.to_csv(path()+r'\Files\\' + str(column) + '.txt', header=None, index=None) #Guardar archivo de txt
     return df_sales_orders
 
 def format_date(format):
@@ -195,7 +195,7 @@ def project(file):
     #Parameters 
     # file = Destination file
 
-    wo_types = pd.read_excel(share_path()+'\Master Template\Material Master - WO Types.xlsx', sheet_name='WO TYPES')
+    wo_types = pd.read_excel(share_path()+r'\Master Template\Material Master - WO Types.xlsx', sheet_name='WO TYPES')
 
     file = file.merge(wo_types[['WO TYPE','COMPLEXITY']], on='WO TYPE', how='left')
 
@@ -221,16 +221,16 @@ def project(file):
 
 def family(file):
 
-    sku_summary = pd.read_excel(share_path()+'\Master Template\Material Master - WO Types.xlsx', sheet_name='Material Master')
+    sku_summary = pd.read_excel(share_path()+r'\Master Template\Material Master - WO Types.xlsx', sheet_name='Material Master')
     file = file.merge(sku_summary[['BASE SKU','FAMILY']], on='BASE SKU', how='left')
     file['FAMILY'] = file['FAMILY'].fillna('FAMILY NOT FOUND')
 
     return file
 
 def clean_source():
-    log_file_route = path()+'\Files'
+    log_file_route = path()+r'\Files'
     for i in os.listdir(log_file_route):
-        os.remove(path()+'\Files\\' + i)
+        os.remove(path()+r'\Files\\' + i)
 
 def primary_key(df):
     
@@ -248,7 +248,7 @@ def primary_key(df):
             df.loc[i,'PRIMARY KEY'] = work_order_key
     
     df = df[ ['PRIMARY KEY'] + [ col for col in df.columns if col != 'PRIMARY KEY' ] ]
-    df['PRIMARY KEY'] = df['PRIMARY KEY'].astype(str).str.replace("\.0$", "",regex=True)
+    df['PRIMARY KEY'] = df['PRIMARY KEY'].astype(str).str.replace(r'\.0$', "",regex=True)
 
     return df
 
@@ -414,11 +414,11 @@ def root_path(jumps_back):
 
 def delete_local_files(): #Delete file from 'Files' folder for specific project
 
-    log_file_route = path()+'\Files'
+    log_file_route = path()+r'\Files'
     for i in os.listdir(log_file_route): 
         if (i != 'Shippable_'+format_date(3)+'.xlsx') & (i != 'Master_columns.txt') & (i != 'Master_columns_temp.txt') & (i != 'Summary_columns.txt')  & (i != 'Summary_columns_temp.txt') & (i != 'Ship_columns.txt') & (i != 'RAWDATA.xlsx') & (i != 'Shippable_'+format_date(3)+'(CA).xlsx'):
             print("Removed: "+i)
-            os.remove(path()+'\Files\\' + i)
+            os.remove(path()+r'\Files\\' + i)
 
 def previous_labor_day():
     current_day = datetime.date.today()
@@ -528,7 +528,7 @@ def coois():
     
     convert_xlsx('coois.xls')
 
-    coois =  pd.read_excel(path()+'\Files\coois.xlsx', skiprows=[0,1,2,4])
+    coois =  pd.read_excel(path()+r'\Files\coois.xlsx', skiprows=[0,1,2,4])
     coois = coois.loc[:, ~coois.columns.str.contains('^Unnamed')]
     coois.drop(coois.tail(2).index,inplace=True) # drop last n rows
     coois.columns = txt_array('coois_default.txt')
@@ -554,7 +554,7 @@ def coois():
 
 def remove_decimals(df,column_name):
  
-    df[column_name] = df[column_name].astype(str).str.replace('\.0$', '', regex=True)
+    df[column_name] = df[column_name].astype(str).str.replace(r'\.0$', '', regex=True)
  
     return df
 
@@ -645,7 +645,7 @@ def cygnus_request(wos,report):
 
     subprocess.call('sh bash_scripts/request_wip.sh '+wos+' '+report)   
 
-    data = open(path()+'\json\\cygnus_files.json','r') #read json file downloaded
+    data = open(path()+r'\json\\cygnus_files.json','r') #read json file downloaded
     json_array = json.load(data)
     jsonf = json.dumps(json_array[1]) #get inormation to dataframe
     df = pd.read_json(jsonf)
@@ -663,7 +663,7 @@ def cyg_logout():
 def download_cygnus_files(df,column_list,column_name,array_range,sign_concat,report):
 
     try:
-        df=df.str.replace("\.0$", "",regex=True)
+        df=df.str.replace(r'\.0$', "",regex=True)
     except Exception as e:
         print('Error: '+str(e))
     
@@ -702,7 +702,7 @@ def download_cygnus_files(df,column_list,column_name,array_range,sign_concat,rep
 def wo_status(df,array_range,sign_concat,report):
 
     try:
-        df=df.str.replace("\.0$", "",regex=True)
+        df=df.str.replace(r'\.0$', "",regex=True)
     except Exception as e:
         print('Error: '+str(e))
     
@@ -817,7 +817,7 @@ def api_request(column,po_list,Trantype,report,signal):
 
     try:    
 
-        with open(path()+'\Json_Files\Cygnus_API.json', 'r') as f:
+        with open(path()+r'\Json_Files\Cygnus_API.json', 'r') as f:
             data = json.load(f)
 
         df = pd.DataFrame(json.loads(pd.DataFrame([data])['JSONResponse'][0]))
@@ -875,7 +875,7 @@ def signals(df ,column, trant_type, report, signal):
     try:
 
         final_df.reset_index(drop=True,inplace=True)
-        final_df.to_excel(path()+'\Files\\'+str(trant_type)+'.xlsx', index=False)
+        final_df.to_excel(path()+r'\Files\\'+str(trant_type)+'.xlsx', index=False)
 
         return final_df
 
@@ -885,19 +885,19 @@ def signals(df ,column, trant_type, report, signal):
 
 def datetime_convertion(df,column):
 
-    df[column] = df[column].astype(str).str.replace("\.0$", "",regex=True)
+    df[column] = df[column].astype(str).str.replace(r'\.0$', "",regex=True)
 
     return pd.to_datetime(df[column])
 
 def fill_holds(df):
 
-    hpe_Holds_s4 = pd.read_excel(share_path()+'\Master_Analysis\PO_VIEWER.xlsx', usecols=['WORK ORDER','HPE RESTRICTIONS'])
+    hpe_Holds_s4 = pd.read_excel(share_path()+r'\Master_Analysis\PO_VIEWER.xlsx', usecols=['WORK ORDER','HPE RESTRICTIONS'])
     try:
-        hpe_Holds_fusion = pd.read_excel(path()+'\Files\860_Holds.xlsx', usecols=['PO','HPE RESTRICTIONS'])
-        hold_tool_cygnus = pd.read_excel(path()+'\Files\hold_tool_report.xlsx', usecols=['ID','HOLD TYPE'])
+        hpe_Holds_fusion = pd.read_excel(path()+r'\Files\860_Holds.xlsx', usecols=['PO','HPE RESTRICTIONS'])
+        hold_tool_cygnus = pd.read_excel(path()+r'\Files\hold_tool_report.xlsx', usecols=['ID','HOLD TYPE'])
     except:
-        hpe_Holds_fusion = pd.read_excel(share_path()+'\Master_Analysis\860_Holds.xlsx', usecols=['PO','HPE RESTRICTIONS'])
-        hold_tool_cygnus = pd.read_excel(share_path()+'\Master_Analysis\hold_tool_report.xlsx', usecols=['ID','HOLD TYPE'])
+        hpe_Holds_fusion = pd.read_excel(share_path()+r'\Master_Analysis\860_Holds.xlsx', usecols=['PO','HPE RESTRICTIONS'])
+        hold_tool_cygnus = pd.read_excel(share_path()+r'\Master_Analysis\hold_tool_report.xlsx', usecols=['ID','HOLD TYPE'])
 
     df['WORK ORDER'] = df['WORK ORDER'].astype(str).str.replace('.0', '', regex=False)
     hpe_Holds_s4['WORK ORDER'] = hpe_Holds_s4['WORK ORDER'].astype(str).str.replace('.0', '', regex=False)
@@ -929,7 +929,7 @@ def fill_holds(df):
     df = df.drop_duplicates(subset='SO ID', keep='first')
     df.fillna('NA',inplace=True)
 
-    df.to_excel(path()+'\Files\\Fill_holds.xlsx',index = False)
+    df.to_excel(path()+r'\Files\\Fill_holds.xlsx',index = False)
 
     return df
 
@@ -961,7 +961,7 @@ def cookie_cygnus():
 
 def txt_array_2d(z_file):
 
-    with open(share_path()+'\Files_Format\\'+z_file) as textFile:
+    with open(share_path()+r'\Files_Format\\'+z_file) as textFile:
 
         lines = [line.split() for line in textFile]
 
@@ -978,7 +978,7 @@ def previous_master_share():
     
     server = 'https://fiicorp.sharepoint.com'
     filename = 'Previous_Master'
-    file_directory = path()+'\Files'
+    file_directory = path()+r'\Files'
 
     site = 'https://fiicorp.sharepoint.com/:x:/r/sites/CABGL10/Departments/Order%20Management/01%20Master%20Consolidado/Master%20Final/Master%20'+previous_labor_day().strftime('%m%d%Y')+'.xlsx'
     s = sharepy.connect(server,txt_array('Credentials.txt')[0],txt_array('Credentials.txt')[1])
@@ -1054,7 +1054,7 @@ def assing_buckets(df,column_name,reference_column):
 
     df[column_name] = pd.cut(df[reference_column],bins).astype(str)
 
-    array = [['\.0$',''],['(',''],[',',' to'],[']','']]
+    array = [[r'\.0$',''],['(',''],[',',' to'],[']','']]
 
     for i in array:
 
@@ -1064,7 +1064,7 @@ def assing_buckets(df,column_name,reference_column):
 
 def zpp9_format():
 
-    df =  pd.read_csv(path()+'\Files\zpp9.xls', skiprows=[0,1], sep='\\t', thousands=',' , engine='python', encoding='ISO-8859-1')
+    df =  pd.read_csv(path()+r'\Files\zpp9.xls', skiprows=[0,1], sep='\\t', thousands=',' , engine='python', encoding='ISO-8859-1')
 
     return df
 
@@ -1085,7 +1085,7 @@ def Ship_History(df):
             a = i
             subprocess.call('sh bash_scripts/request.sh SHIP_HISTORY '+i)
 
-            data = open(path()+'\Json_Files\\Cygnus_Files.json','r') #read json file downloaded
+            data = open(path()+r'\Json_Files\\Cygnus_Files.json','r') #read json file downloaded
 
             json_array = json.load(data)
             jsonf = json.dumps(json_array[1]) #get inormation to dataframe
@@ -1111,11 +1111,11 @@ def Ship_History(df):
 
     cyg_logout()
 
-    mat_master.to_excel(path()+'\Files\\SHIP_HISTORY.xlsx',index=False)
+    mat_master.to_excel(path()+r'\Files\\SHIP_HISTORY.xlsx',index=False)
     mat_master.reset_index(drop=True,inplace=True)
     mat_master['PGI Date'] = pd.to_datetime(mat_master['PGI Date']).sort_values()
     mat_master = mat_master[mat_master['PGI Date'] >= current_date()].reset_index(drop=True)
-    mat_master['WORK ORDER'] = mat_master['WORK ORDER'].astype(str).str.replace("\.0$", "",regex=True)
+    mat_master['WORK ORDER'] = mat_master['WORK ORDER'].astype(str).str.replace(r'\.0$', "",regex=True)
     mat_master['DN QTY'] = mat_master.groupby(['WORK ORDER'])['DN QTY'].transform('sum')
     mat_master = mat_master.drop_duplicates(subset='WORK ORDER').reset_index(drop=True)
 
@@ -1197,7 +1197,7 @@ def format_timedelta(td):
 
 def hold_tool_rpt():
  
-    data = open(path()+'\Json_Files\\Cygnus_Files.json','r',encoding='utf-8') #read json file downloaded
+    data = open(path()+r'\Json_Files\\Cygnus_Files.json','r',encoding='utf-8') #read json file downloaded
     json_array = json.load(data)
     jsonf = json.dumps(json_array[1]) #get inormation to dataframe  
     df = pd.read_json(StringIO(jsonf))
@@ -1213,7 +1213,7 @@ def hold_tool_rpt():
 
 def wo_error_price():
 
-    with open(share_path()+'\\Prices\\ZS189_ERRORS.txt', 'r') as file:
+    with open(share_path()+r'\\Prices\\ZS189_ERRORS.txt', 'r') as file:
         # Read all lines from the file
         lines = file.readlines()
     return [int(line.strip()) for line in lines]
@@ -1225,7 +1225,7 @@ def sql_parameters():
     Returns:
         str: The database connection string.
     """
-    with open(share_path()+'\\Files_Format\\db_connection.txt', 'r') as file:
+    with open(share_path()+r'\\Files_Format\\db_connection.txt', 'r') as file:
         conn_str = ''.join(line.strip() for line in file)
 
     return conn_str
@@ -1249,7 +1249,7 @@ def sql_parameters():
     Returns:
         str: The database connection string.
     """
-    with open(share_path()+'\\Files_Format\\db_connection.txt', 'r') as file:
+    with open(share_path()+r'\\Files_Format\\db_connection.txt', 'r') as file:
         conn_str = ''.join(line.strip() for line in file)
  
     return conn_str

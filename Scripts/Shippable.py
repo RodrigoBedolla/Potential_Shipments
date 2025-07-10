@@ -6,11 +6,13 @@ from Email import send_email
 import shutil
 import time
 from potential_shipments import *
+from Execution_log import Execution_log
 
+start = get_time()
 
 def case_assignnment(df_master,prev_master):
 
-    df_master['WORK ORDER'] = df_master['WORK ORDER'].astype(str).str.replace("\.0$", "",regex = True)
+    df_master['WORK ORDER'] = df_master['WORK ORDER'].astype(str).str.replace(r'\.0$', "",regex = True)
     df_master = df_master.merge(prev_master[['WORK ORDER','SCHEDULED DATE','STATUS']],on = 'WORK ORDER', how = 'left')
     df_master.fillna('NA',inplace = True)
     df_master = df_master[(df_master['ITEM'] != 'NA') & (df_master['SCHEDULED DATE'] != 'NA')].reset_index(drop = True)
@@ -35,7 +37,7 @@ def case_assignnment(df_master,prev_master):
     master_tbc['BUCKET'] = np.where(master_tbc['STATUS'] == 'SHORT','SHORT TBC',master_tbc['BUCKET'])
 
     master_non_tbc = df_master_nested[df_master_nested['SCHEDULED DATE'].astype(str).str.contains('TBC') == False]
-    master_non_tbc.to_csv(path()+'\Files\\master_non_tbc.csv',index = False)
+    master_non_tbc.to_csv(path()+r'\Files\\master_non_tbc.csv',index = False)
     master_non_tbc['SCHEDULED DATE'] = pd.to_datetime(master_non_tbc['SCHEDULED DATE'],errors='coerce')
 
     df_schedule_dt_max = master_non_tbc.sort_values('SCHEDULED DATE', ascending = False).drop_duplicates(subset = 'PO',keep = 'first').reset_index(drop=True)
@@ -112,13 +114,13 @@ def standalone(df):
 
     df['WORK ORDER'] = df['WORK ORDER'].astype('int64')
 
-    master_base = pd.read_excel(share_path()+'\Master Template\master_base.xlsx')
+    master_base = pd.read_excel(share_path()+r'\Master Template\master_base.xlsx')
     df = df.merge(master_base[['WORK ORDER','STANDALONE']],on='WORK ORDER',how='left').drop_duplicates().reset_index(drop=True)
 
     try:
-        signal_855 = pd.read_excel(share_path()+'\OM_RPAs_Files\Backup\\Open\\Open '+format_date(3)+'.xlsx')
+        signal_855 = pd.read_excel(share_path()+r'\OM_RPAs_Files\Backup\\Open\\Open '+format_date(3)+'.xlsx')
     except:
-        signal_855 = pd.read_excel(share_path()+'\OM_RPAs_Files\Backup\\Open\\Open '+previous_labor_day().strftime('%m%d%Y')+'.xlsx')
+        signal_855 = pd.read_excel(share_path()+r'\OM_RPAs_Files\Backup\\Open\\Open '+previous_labor_day().strftime('%m%d%Y')+'.xlsx')
         
     df = df.merge(signal_855[['WORK ORDER','F ACK D']],on='WORK ORDER',how='left').fillna(datetime.datetime.today().date()).drop_duplicates().reset_index(drop=True)
 
@@ -138,10 +140,10 @@ def standalone(df):
 def Shippable_complete():
     
     delete_local_files()    
-    shutil.copy(share_path()+'\Master_History\\\Master '+previous_labor_day().strftime('%m%d%Y')+'.xlsx',path()+'\Files\Previous_Master.xlsx')
+    shutil.copy(share_path()+r'\Master_History\\\Master '+previous_labor_day().strftime('%m%d%Y')+'.xlsx',path()+r'\Files\Previous_Master.xlsx')
     
-    prev_master = pd.read_excel(path()+'\Files\\Previous_Master.xlsx')
-    prev_master['WORK ORDER'] = prev_master['WORK ORDER'].astype(str).str.replace("\.0$", "",regex = True)
+    prev_master = pd.read_excel(path()+r'\Files\\Previous_Master.xlsx')
+    prev_master['WORK ORDER'] = prev_master['WORK ORDER'].astype(str).str.replace(r'\.0$', "",regex = True)
     prev_master.fillna('NA',inplace = True)
 
     try:
@@ -151,10 +153,20 @@ def Shippable_complete():
     except:
         pass
 
-    master_summary = pd.read_excel(share_path()+'\Master Template\\master_base.xlsx')
+    master_summary = pd.read_excel(share_path()+r'\Master Template\\master_base.xlsx')
     master_summary = master_summary[master_summary['WO TYPE'] != 'ZJMW'].reset_index(drop=True) #Changed done on 05092024 by shipping; Sebastian Campos
 
-    df_country = master_summary[['WORK ORDER','COUNTRY']]
+    #df_country = master_summary[['WORK ORDER','COUNTRY']]
+    df_country = pd.read_excel(share_path()+'\\Master_Analysis\\RSP_backlog_WOID.xlsx')
+
+    df_country = df_country[['Supplier PO #','Ship-to country']].drop_duplicates(subset='Supplier PO #')
+    df_country = remove_decimals(df_country, 'Supplier PO #')
+    df_country = df_country.rename(columns={'Supplier PO #': 'PO', 'Ship-to country': 'COUNTRY'})
+
+    #Array to identify destination country for inbound process, US: USA, AR: Argentina, PR: Puerto Rico, AK: Alaska
+    inbound_process = ['US', 'AR', 'PR', 'AK']
+    df_country['INBOUND'] = df_country['COUNTRY'].apply(lambda x: 'DOMESTIC' if x in inbound_process else 'INBOUND/INTERNATIONAL')
+
 
     rdd_list = master_summary['PO'][master_summary['ITEM RDD'] == '00/00/0000'].drop_duplicates().to_numpy()
     rdd_date = master_summary[['PO','ITEM RDD']][(master_summary['PO'].isin(rdd_list)) & (master_summary['ITEM RDD'] != '00/00/0000')].drop_duplicates().reset_index(drop=True)
@@ -170,7 +182,7 @@ def Shippable_complete():
     master_summary = primary_key_by_so(master_summary)
     master_summary = dailys(master_summary)
     master_summary = master_summary[txt_array_local('Master_columns.txt')]
-    master_summary['WORK ORDER'] = master_summary['WORK ORDER'].astype(str).str.replace("\.0$", "",regex=True)
+    master_summary['WORK ORDER'] = master_summary['WORK ORDER'].astype(str).str.replace(r'\.0$', "",regex=True)
     master_summary = primary_key(master_summary)
     master_summary['ITEM RDD'] = pd.to_datetime(master_summary['ITEM RDD'])           
     master_summary.drop(columns=['ITEM'],inplace = True)
@@ -179,12 +191,12 @@ def Shippable_complete():
     master_summary = fill_holds(master_summary)
 
     #from SHIPSTATUS get SHIP TYPE,SHIP STATUS,GENERAL STATUS,PRD STATUS,PRD BUCKET
-    ship_status = pd.read_excel(share_path()+'\OM_RPAs_Files\Backup\SHIP_STATUS\\SHIP_STATUS.xlsx',sheet_name = 'SHIP STATUS',usecols = txt_array_local('Ship_columns.txt'))
+    ship_status = pd.read_excel(share_path()+r'\OM_RPAs_Files\Backup\SHIP_STATUS\\SHIP_STATUS.xlsx',sheet_name = 'SHIP STATUS',usecols = txt_array_local('Ship_columns.txt'))
     
-    ship_status['PRIMARY KEY'] = ship_status['PRIMARY KEY'].astype(str).str.replace("\.0$", "",regex=True)
+    ship_status['PRIMARY KEY'] = ship_status['PRIMARY KEY'].astype(str).str.replace(r'\.0$', "",regex=True)
     master_summary = master_summary.merge(ship_status, on = 'PRIMARY KEY', how = 'left').drop_duplicates().reset_index(drop = True)
     master_summary.fillna('NA',inplace=True)
-    master_summary['ITEM'] = master_summary['ITEM'].astype(str).str.replace("\.0$", "",regex=True)
+    master_summary['ITEM'] = master_summary['ITEM'].astype(str).str.replace(r'\.0$', "",regex=True)
     master_summary['PO + ITEM'] = master_summary['PO'].astype(str) + master_summary['ITEM']
     master_summary = master_summary[txt_array_local('Summary_columns.txt')]
 
@@ -202,14 +214,14 @@ def Shippable_complete():
 
     #--------------UPDATE DN QTY WITH SHIP STATUS PARTIAL SHIPMENTS---------------
     
-    df_partial_ship = pd.read_excel(share_path()+'\OM_RPAs_Files\\Backup\\SHIP_STATUS\\SHIP_STATUS.xlsx',sheet_name='SHIP STATUS')
+    df_partial_ship = pd.read_excel(share_path()+r'\OM_RPAs_Files\\Backup\\SHIP_STATUS\\SHIP_STATUS.xlsx',sheet_name='SHIP STATUS')
     df_partial_ship.fillna('NA',inplace = True)
     df_partial_ship['PGI DATE'] = df_partial_ship['PGI DATE'].astype(str)
     df_partial_ship = df_partial_ship[['WORK ORDER','DN QTY']][(df_partial_ship['PARTIAL SHIPMENTS'].str.contains('X') == True) & (df_partial_ship['PGI DATE'].str.contains(str(current_date())))].reset_index(drop = True)
     
     summary_pivot = pd.pivot_table(df_partial_ship,index = ['WORK ORDER'],values=['DN QTY'],aggfunc='sum',margins_name = 'DN QTY')
     summary_pivot = pd.DataFrame(summary_pivot.to_records()).reset_index(drop = True)
-    summary_pivot['WORK ORDER'] = summary_pivot['WORK ORDER'].astype(str).str.replace("\.0$", "",regex=True)
+    summary_pivot['WORK ORDER'] = summary_pivot['WORK ORDER'].astype(str).str.replace(r'\.0$', "",regex=True)
     
     if summary_pivot.empty == False:
 
@@ -260,38 +272,42 @@ def Shippable_complete():
     master_summary_sc['ERROR PRICE'] = np.where(master_summary_sc['ANALYSIS_LEVEL'].isin(error_price_list),'X','-')
 
     #Get CATEGORY and SEQUENCE from previous backlog sequence
-    backlog_sequence = pd.read_excel(share_path()+'\\Backlog_Sequence\\Backlog_Sequence_'+previous_labor_day().strftime('%m%d%Y')+'.xlsx',usecols=['WORK ORDER','CATEGORY','CATEGORY VALUE'])
+    backlog_sequence = pd.read_excel(share_path()+r'\\Backlog_Sequence\\Backlog_Sequence_'+previous_labor_day().strftime('%m%d%Y')+'.xlsx',usecols=['WORK ORDER','CATEGORY','CATEGORY VALUE'])
     master_summary_sc = master_summary_sc.merge(backlog_sequence,on='WORK ORDER',how='left').drop_duplicates().reset_index(drop=True)
     master_summary_sc['CATEGORY VALUE'] = np.where(master_summary_sc['CATEGORY'].str.contains('HPE AGED LIST'),0,master_summary_sc['CATEGORY VALUE'])
     master_summary_sc.sort_values(by=['CATEGORY VALUE','CLOSED DATE'],ascending=[True, True],inplace=True)
     master_summary_sc.reset_index(drop=True, inplace=True)
     master_summary_sc['PRIORITY'] = master_summary_sc.index + 1
-    master_summary_sc.to_excel(path()+'\Files\\master_summary_sc.xlsx',index=False)
+    master_summary_sc.to_excel(path()+r'\Files\\master_summary_sc.xlsx',index=False)
 
     ship_pivot = pd.pivot_table(master_summary_sc,index = ['COMPLEXITY CATEGORY'],columns={'PGI'},values = ['OPEN QTY'],aggfunc = 'sum',margins=True,margins_name = 'TOTAL',fill_value=0)
     ship_pivot = pd.DataFrame(ship_pivot.to_records())
 
     ship_pivot.rename(columns = {'COMPLEXITY CATEGORY': 'COMPLEXITY',"('OPEN QTY', 'PENDING PGI')":'PENDING PGI',"('OPEN QTY', 'SHIPPED (PGI)')":'SHIPPED (PGI)',"('OPEN QTY', 'TOTAL')":'TOTAL'}, inplace = True)
-    ship_pivot['TOTAL'] = ship_pivot['TOTAL'].astype(str).str.replace("\.0$", "",regex = True)
+    ship_pivot['TOTAL'] = ship_pivot['TOTAL'].astype(str).str.replace(r'\.0$', "",regex = True)
 
     mail_format = master_summary_sc[['PO','SO','OPEN QTY','WORK ORDER','SHIPPABLE','COMPLEXITY','COMPLEXITY CATEGORY','CLOSED DATE','AGING','CATEGORY','PRIORITY','ERROR PRICE']]
-    mail_format = mail_format.merge(df_country,on='WORK ORDER',how='left').reset_index(drop = True)    
+    
+    mail_format = mail_format.merge(df_country,on='PO',how='left').reset_index(drop = True)    
 
-    with pd.ExcelWriter(path()+'\Files\\Shippable_'+format_date(3)+'.xlsx') as writer:
+    with pd.ExcelWriter(path()+r'\Files\\Shippable_'+format_date(3)+'.xlsx') as writer:
         mail_format.to_excel(writer,'SHIPPABLE', index = False)
         ship_pivot.to_excel(writer,'SUMMARY', index = False)
         master_summary.to_excel(writer,'RAWDATA',index = False)
 
     send_email('ecmms.OM@FII-NA.com ; ecmms.shipping@fii-na.com','valeria.pereyra@fii-na.com ; Bryan.Rodriguez@FII-NA.com','Shippable '+format_date(4),ship_pivot)
+    #send_email('rodrigo.bedolla@fii-na.com','Bryan.Rodriguez@FII-NA.com','Shippable '+format_date(4),ship_pivot)
 
     df_case_assign = case_assignnment(master_summary,prev_master)
 
-    with pd.ExcelWriter(path()+'\Files\\Shippable_'+format_date(3)+'(CA).xlsx') as writer_complete:
+    with pd.ExcelWriter(path()+r'\Files\\Shippable_'+format_date(3)+'(CA).xlsx') as writer_complete:
         df_case_assign.to_excel(writer_complete,'CASE ASSIGNMENT',index = False)
 
     try:
         potential_shipments()
     except Exception as e:
         print('New Shipments Overview Error: '+str(e))
+
+    Execution_log(start,'SUCCESS','','X')
 
 #Shippable_complete()
