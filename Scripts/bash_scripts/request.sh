@@ -13,4 +13,8 @@ elif [[ $1 == "SHIP_HISTORY" ]]
 then
 
     sh bash_scripts/ship_history.sh $2> ../Json_Files/Cygnus_Files.json;
+    
+elif [[ $2 == "PRD_SUMMARY" ]] 
+then
+    sh bash_scripts/prd_summary.sh "$1" "$3" | tee ../Json_Files/Cygnus_Files.json;
 fi

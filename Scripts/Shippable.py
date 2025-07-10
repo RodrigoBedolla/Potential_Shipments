@@ -282,7 +282,7 @@ def Shippable_complete():
         ship_pivot.to_excel(writer,'SUMMARY', index = False)
         master_summary.to_excel(writer,'RAWDATA',index = False)
 
-    send_email('ecmms.OM@FII-NA.com ; ecmms.shipping@fii-na.com','valeria.pereyra@fii-na.com ; Bryan.Rodriguez@FII-NA.com ; alejandro.prado@fii-na.com','Shippable '+format_date(4),ship_pivot)
+    send_email('ecmms.OM@FII-NA.com ; ecmms.shipping@fii-na.com','valeria.pereyra@fii-na.com ; Bryan.Rodriguez@FII-NA.com','Shippable '+format_date(4),ship_pivot)
 
     df_case_assign = case_assignnment(master_summary,prev_master)
 

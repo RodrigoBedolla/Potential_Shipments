@@ -1241,3 +1241,15 @@ def non_ctr(df):
         df['PO'] = df['PO'].astype(np.int64)
 
         return df
+
+def sql_parameters():
+    """
+    Reads the database connection string from a text file and returns it.
+ 
+    Returns:
+        str: The database connection string.
+    """
+    with open(share_path()+'\\Files_Format\\db_connection.txt', 'r') as file:
+        conn_str = ''.join(line.strip() for line in file)
+ 
+    return conn_str

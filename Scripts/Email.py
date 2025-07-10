@@ -1,6 +1,10 @@
-
 from My_Book import txt_array,format_date,path
 import win32com.client as win32
+from Signature import get_html_signature
+
+name ='Erik Carbajal Ruiz' 
+email ='erik.carbajalr@fii-na.com'
+phone_extension = ''
 
 def send_email(recipient_email,cc_recipient_email,subject,df):
 
@@ -55,8 +59,9 @@ def send_email(recipient_email,cc_recipient_email,subject,df):
 
             <br><br>
             Saludos/Regards!<br>
-            Erik Carbajal<br>
-            <b>OM</b></font>
+            Erik Carbajal Ruiz<br>
+            <b>OM</b>
+            </font>
 	    </body>
     </html>
     """

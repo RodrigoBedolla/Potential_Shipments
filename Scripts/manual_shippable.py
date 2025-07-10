@@ -6,7 +6,9 @@ from Email import send_email
 import shutil
 import time
 from potential_shipments import *
+from Execution_log import Execution_log
 
+start = get_time()
 
 def case_assignnment(df_master,prev_master):
 
@@ -282,8 +284,8 @@ def Shippable_complete():
         ship_pivot.to_excel(writer,'SUMMARY', index = False)
         master_summary.to_excel(writer,'RAWDATA',index = False)
 
-    send_email('ecmms.OM@FII-NA.com ; ecmms.shipping@fii-na.com','valeria.pereyra@fii-na.com ; Bryan.Rodriguez@FII-NA.com ; alejandro.prado@fii-na.com','Shippable '+format_date(4),ship_pivot)
-    #send_email('rodrigo.bedolla@FII-NA.com','Bryan.Rodriguez@FII-NA.com','Shippable '+format_date(4),ship_pivot)
+    send_email('ecmms.OM@FII-NA.com ; ecmms.shipping@fii-na.com','valeria.pereyra@fii-na.com ; Bryan.Rodriguez@FII-NA.com','Shippable '+format_date(4),ship_pivot)
+    #send_email('erik.carbajalr@fii-na.com','Bryan.Rodriguez@FII-NA.com','Shippable '+format_date(4),ship_pivot)
 
     df_case_assign = case_assignnment(master_summary,prev_master)
 
@@ -294,5 +296,7 @@ def Shippable_complete():
         potential_shipments()
     except Exception as e:
         print('New Shipments Overview Error: '+str(e))
+
+    Execution_log(start,'SUCCESS','','X')
 
 Shippable_complete()

@@ -5,7 +5,7 @@
 import schedule
 import time
 from Shippable import *
-from Execution_log import *
+from Execution_log import Execution_log
 from Email_Alerts import *
 
 flag = 0
@@ -22,7 +22,7 @@ def main():
     if week_day() not in txt_array('Weekend_Execution.txt'):
 
         Shippable_complete()
-        Execution_log(start,'SUCCESS','')
+        Execution_log(start,'SUCCESS','','-')
     
     error_count = 0
 
@@ -37,7 +37,7 @@ def job():
 
         if error_count == 0:
             
-            schedule.every().hour.at(":59").do(main)
+            schedule.every().hour.at(":55").do(main)
             schedule.every().day.at("07:26").do(main)
             schedule.every().day.at("08:26").do(main)
             schedule.every().day.at("09:26").do(main)
@@ -59,29 +59,32 @@ def job():
 
     except Exception as error:
 
-        df_table = Execution_log(start,'FAIL',error)
+        df_table = Execution_log(start,'FAIL',error,'-')
 
         df_table = df_table[['SCRIPT NAME','START', 'FINISH','EXECUTION TIME','PASS/FAIL','FAILURE DESCRIPTION']]
 
         error_count = error_count + 1
 
+        bi_team = 'rodrigo.bedolla@fii-na.com ; erik.carbajalr@fii-na.com ; bryan.rodriguez@fii-na.com'
+        error_subject = 'POTENTIAL SHIPMENTS '+ str(format_date(2))
+
         if error_count <= 5:
 
             if error_count == 1:
 
-                send_mail_alert('rodrigo.bedolla@fii-na.com', 'POTENTIAL SHIPMENTS '+ str(format_date(2)) +' ERROR' , 'Proximo intento en 5 min | numero de intento: '+str(error_count), df_table)
+                send_mail_alert(bi_team, error_subject+' ERROR' , 'Proximo intento en 5 min | numero de intento: '+str(error_count), df_table)
 
             else:
 
-                send_mail_alert('rodrigo.bedolla@fii-na.com', 'POTENTIAL SHIPMENTS '+ str(format_date(2)) +' ERROR' , 'Proximo intento en 5 min | numero de intento: '+str(error_count), df_table)
+                send_mail_alert(bi_team, error_subject+' ERROR' , 'Proximo intento en 5 min | numero de intento: '+str(error_count), df_table)
 
         elif error_count <= 10:
 
-            send_mail_alert('rodrigo.bedolla@fii-na.com', 'POTENTIAL SHIPMENTS '+ str(format_date(2)) +' ERROR' , 'Proximo intento en 30 min | numero de intento: '+str(error_count), df_table)
+            send_mail_alert(bi_team, error_subject+' ERROR' , 'Proximo intento en 30 min | numero de intento: '+str(error_count), df_table)
         
         else:
 
-            send_mail_alert('rodrigo.bedolla@fii-na.com', 'POTENTIAL SHIPMENTS '+ str(format_date(2)) +' CRITICAL ERROR' , 'Ultimo intento | numero de intento: '+str(error_count), df_table)
+            send_mail_alert(bi_team, error_subject+' CRITICAL ERROR' , 'Ultimo intento | numero de intento: '+str(error_count), df_table)
 
         if error_count <= 10:
 
