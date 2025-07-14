@@ -156,17 +156,21 @@ def Shippable_complete():
     master_summary = pd.read_excel(share_path()+r'\Master Template\\master_base.xlsx')
     master_summary = master_summary[master_summary['WO TYPE'] != 'ZJMW'].reset_index(drop=True) #Changed done on 05092024 by shipping; Sebastian Campos
 
-    #df_country = master_summary[['WORK ORDER','COUNTRY']]
-    df_country = pd.read_excel(share_path()+'\\Master_Analysis\\RSP_backlog_WOID.xlsx')
+    df_sap_country = master_summary[['PO','COUNTRY']].drop_duplicates(subset='PO').reset_index(drop=True)
+    df_country_hpe_file = pd.read_excel(share_path()+'\\Master_Analysis\\RSP_backlog_WOID.xlsx')
 
-    df_country = df_country[['Supplier PO #','Ship-to country']].drop_duplicates(subset='Supplier PO #')
-    df_country = remove_decimals(df_country, 'Supplier PO #')
-    df_country = df_country.rename(columns={'Supplier PO #': 'PO', 'Ship-to country': 'COUNTRY'})
+    df_country_hpe_file = df_country_hpe_file[['Supplier PO #','Ship-to country']].drop_duplicates(subset='Supplier PO #')
+    df_country_hpe_file = remove_decimals(df_country_hpe_file, 'Supplier PO #')
+    df_sap_country = remove_decimals(df_sap_country, 'PO')
+
+    df_country_hpe_file = df_country_hpe_file.rename(columns={'Supplier PO #': 'PO', 'Ship-to country': 'COUNTRY_HPE_FILE'})
+    df_sap_country = df_sap_country.rename(columns={'COUNTRY': 'COUNTRY_FMX_SAP'})
 
     #Array to identify destination country for inbound process, US: USA, AR: Argentina, PR: Puerto Rico, AK: Alaska
     inbound_process = ['US', 'AR', 'PR', 'AK']
-    df_country['INBOUND'] = df_country['COUNTRY'].apply(lambda x: 'DOMESTIC' if x in inbound_process else 'INBOUND/INTERNATIONAL')
+    df_country_hpe_file['INBOUND'] = df_country_hpe_file['COUNTRY_HPE_FILE'].apply(lambda x: 'DOMESTIC' if x in inbound_process else 'INBOUND/INTERNATIONAL')
 
+    df_sap_country = df_sap_country.merge(df_country_hpe_file, on='PO', how='left').fillna('-').reset_index(drop=True)
 
     rdd_list = master_summary['PO'][master_summary['ITEM RDD'] == '00/00/0000'].drop_duplicates().to_numpy()
     rdd_date = master_summary[['PO','ITEM RDD']][(master_summary['PO'].isin(rdd_list)) & (master_summary['ITEM RDD'] != '00/00/0000')].drop_duplicates().reset_index(drop=True)
@@ -288,15 +292,15 @@ def Shippable_complete():
 
     mail_format = master_summary_sc[['PO','SO','OPEN QTY','WORK ORDER','SHIPPABLE','COMPLEXITY','COMPLEXITY CATEGORY','CLOSED DATE','AGING','CATEGORY','PRIORITY','ERROR PRICE']]
     
-    mail_format = mail_format.merge(df_country,on='PO',how='left').reset_index(drop = True)    
+    mail_format = mail_format.merge(df_sap_country,on='PO',how='left').reset_index(drop = True)    
 
     with pd.ExcelWriter(path()+r'\Files\\Shippable_'+format_date(3)+'.xlsx') as writer:
         mail_format.to_excel(writer,'SHIPPABLE', index = False)
         ship_pivot.to_excel(writer,'SUMMARY', index = False)
         master_summary.to_excel(writer,'RAWDATA',index = False)
 
-    send_email('ecmms.OM@FII-NA.com ; ecmms.shipping@fii-na.com','valeria.pereyra@fii-na.com ; Bryan.Rodriguez@FII-NA.com','Shippable '+format_date(4),ship_pivot)
-    #send_email('rodrigo.bedolla@fii-na.com','Bryan.Rodriguez@FII-NA.com','Shippable '+format_date(4),ship_pivot)
+    #send_email('ecmms.OM@FII-NA.com ; ecmms.shipping@fii-na.com','valeria.pereyra@fii-na.com ; Bryan.Rodriguez@FII-NA.com','Shippable '+format_date(4),ship_pivot)
+    send_email('rodrigo.bedolla@fii-na.com','Bryan.Rodriguez@FII-NA.com','Shippable '+format_date(4),ship_pivot)
 
     df_case_assign = case_assignnment(master_summary,prev_master)
 
