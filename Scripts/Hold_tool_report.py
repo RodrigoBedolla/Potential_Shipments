@@ -9,6 +9,23 @@ from code_holds import code_holds
 from Hold_tool import po_validation,Hold_type_column
 from SAP import saplogin
 
+
+def hold_by_pn_2(df):
+
+    df = df[['ID','Type']][df['Type'].str.contains('PARTNO')==True].drop_duplicates(subset='ID').reset_index(drop=True)
+    part_no_list = df['ID'].to_list()
+    buffers = pd.read_excel(share_path()+'\\Master Template\\Master_BOM.xlsx')
+    buffers = buffers[buffers['Material'].isin(part_no_list)].drop_duplicates(subset='Material').reset_index(drop=True)
+    sap_input(buffers,'ID')
+    
+    if not df.empty:
+        saplogin(4)
+
+    df = zpp9_format()
+    df = df.rename(columns={'Material':'ID'})
+
+    return df
+
 def hold_by_pn(df):
 
     df = df[['ID','Type']][df['Type'].str.contains('PARTNO')==True].drop_duplicates(subset='ID').reset_index(drop=True)
@@ -35,7 +52,7 @@ def hold_tool():
    
     df = pd.concat([df_1,df_2]).drop_duplicates().reset_index(drop=True)
     try:
-        zpp9 = hold_by_pn(df)
+        zpp9 = hold_by_pn_2(df)
         df = df.merge(zpp9[['ID','Order']],on='ID',how='left')
     except:
         df['Order'] = 0

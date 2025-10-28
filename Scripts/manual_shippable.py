@@ -37,14 +37,17 @@ def case_assignnment(df_master,prev_master):
     master_tbc['BUCKET'] = np.where(master_tbc['STATUS'] == 'SHORT','SHORT TBC',master_tbc['BUCKET'])
 
     master_non_tbc = df_master_nested[df_master_nested['SCHEDULED DATE'].astype(str).str.contains('TBC') == False]
-    master_non_tbc.to_csv(path()+r'\Files\\master_non_tbc.csv',index = False)
+    master_non_tbc.to_csv(path()+r'\\Files\\master_non_tbc.csv',index = False)
     master_non_tbc['SCHEDULED DATE'] = pd.to_datetime(master_non_tbc['SCHEDULED DATE'],errors='coerce')
 
     df_schedule_dt_max = master_non_tbc.sort_values('SCHEDULED DATE', ascending = False).drop_duplicates(subset = 'PO',keep = 'first').reset_index(drop=True)
     master_non_tbc = upgrade_column(master_non_tbc,df_schedule_dt_max,'PO','SCHEDULED DATE',16)
 
     SOC_date,SAB_date = get_SOC_SAB()
-
+    SOC_date = (SOC_date).date()
+    SAB_date = (SAB_date).date()
+    print('SOC date: '+str(SOC_date))
+    print('SAB date: '+str(SAB_date))
     master_non_tbc['RECOVERY DAYS'] = (master_non_tbc['SCHEDULED DATE'] - current_date()).dt.days
     master_non_tbc = assing_buckets(master_non_tbc,'RECOVERY DAYS','RECOVERY DAYS')
 
@@ -118,9 +121,9 @@ def standalone(df):
     df = df.merge(master_base[['WORK ORDER','STANDALONE']],on='WORK ORDER',how='left').drop_duplicates().reset_index(drop=True)
 
     try:
-        signal_855 = pd.read_excel(share_path()+r'\OM_RPAs_Files\Backup\\Open\\Open '+format_date(3)+'.xlsx')
+        signal_855 = pd.read_excel(share_path()+r'\\OM_RPAs_Files\\Backup\\Open\\Open '+format_date(3)+'.xlsx')
     except:
-        signal_855 = pd.read_excel(share_path()+r'\OM_RPAs_Files\Backup\\Open\\Open '+previous_labor_day().strftime('%m%d%Y')+'.xlsx')
+        signal_855 = pd.read_excel(share_path()+r'\\OM_RPAs_Files\\Backup\\Open\\Open '+previous_labor_day().strftime('%m%d%Y')+'.xlsx')
         
     df = df.merge(signal_855[['WORK ORDER','F ACK D']],on='WORK ORDER',how='left').fillna(datetime.datetime.today().date()).drop_duplicates().reset_index(drop=True)
 
@@ -140,9 +143,9 @@ def standalone(df):
 def Shippable_complete():
     
     delete_local_files()    
-    shutil.copy(share_path()+r'\Master_History\\\Master '+previous_labor_day().strftime('%m%d%Y')+'.xlsx',path()+r'\Files\Previous_Master.xlsx')
+    shutil.copy(share_path()+r'\\Master_History\\\Master '+previous_labor_day().strftime('%m%d%Y')+'.xlsx',path()+r'\Files\Previous_Master.xlsx')
     
-    prev_master = pd.read_excel(path()+r'\Files\\Previous_Master.xlsx')
+    prev_master = pd.read_excel(path()+r'\\Files\\Previous_Master.xlsx')
     prev_master['WORK ORDER'] = prev_master['WORK ORDER'].astype(str).str.replace(r'\.0$', "",regex = True)
     prev_master.fillna('NA',inplace = True)
 
@@ -153,7 +156,7 @@ def Shippable_complete():
     except:
         pass
 
-    master_summary = pd.read_excel(share_path()+r'\Master Template\\master_base.xlsx')
+    master_summary = pd.read_excel(share_path()+r'\\Master Template\\master_base.xlsx')
     master_summary = master_summary[master_summary['WO TYPE'] != 'ZJMW'].reset_index(drop=True) #Changed done on 05092024 by shipping; Sebastian Campos
 
     df_sap_country = master_summary[['PO','COUNTRY']].drop_duplicates(subset='PO').reset_index(drop=True)
@@ -277,6 +280,9 @@ def Shippable_complete():
 
     #Get CATEGORY and SEQUENCE from previous backlog sequence
     backlog_sequence = pd.read_excel(share_path()+r'\\Backlog_Sequence\\Backlog_Sequence_'+previous_labor_day().strftime('%m%d%Y')+'.xlsx',usecols=['WORK ORDER','CATEGORY','CATEGORY VALUE'])
+    # master_summary_sc=remove_decimals(master_summary_sc,'WORK ORDER')
+    # backlog_sequence.to_excel(path()+r'\Files\\backlog_sequence_prev.xlsx',index=False)
+    # master_summary_sc.to_excel(path()+r'\Files\\master_summary_sc_pre.xlsx',index=False)
     master_summary_sc = master_summary_sc.merge(backlog_sequence,on='WORK ORDER',how='left').drop_duplicates().reset_index(drop=True)
     master_summary_sc['CATEGORY VALUE'] = np.where(master_summary_sc['CATEGORY'].str.contains('HPE AGED LIST'),0,master_summary_sc['CATEGORY VALUE'])
     master_summary_sc.sort_values(by=['CATEGORY VALUE','CLOSED DATE'],ascending=[True, True],inplace=True)
@@ -294,7 +300,7 @@ def Shippable_complete():
     
     mail_format = mail_format.merge(df_sap_country,on='PO',how='left').reset_index(drop = True)    
 
-    with pd.ExcelWriter(path()+r'\Files\\Shippable_'+format_date(3)+'.xlsx') as writer:
+    with pd.ExcelWriter(path()+r'\\Files\\Shippable_'+format_date(3)+'.xlsx') as writer:
         mail_format.to_excel(writer,'SHIPPABLE', index = False)
         ship_pivot.to_excel(writer,'SUMMARY', index = False)
         master_summary.to_excel(writer,'RAWDATA',index = False)
@@ -304,7 +310,7 @@ def Shippable_complete():
 
     df_case_assign = case_assignnment(master_summary,prev_master)
 
-    with pd.ExcelWriter(path()+r'\Files\\Shippable_'+format_date(3)+'(CA).xlsx') as writer_complete:
+    with pd.ExcelWriter(path()+r'\\Files\\Shippable_'+format_date(3)+'(CA).xlsx') as writer_complete:
         df_case_assign.to_excel(writer_complete,'CASE ASSIGNMENT',index = False)
 
     try:

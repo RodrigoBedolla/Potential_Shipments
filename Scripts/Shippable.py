@@ -47,6 +47,12 @@ def case_assignnment(df_master,prev_master):
 
     master_non_tbc['RECOVERY DAYS'] = (master_non_tbc['SCHEDULED DATE'] - current_date()).dt.days
     master_non_tbc = assing_buckets(master_non_tbc,'RECOVERY DAYS','RECOVERY DAYS')
+    
+    SOC_date,SAB_date = get_SOC_SAB()
+    SOC_date = (SOC_date).date()
+    SAB_date = (SAB_date).date()
+    print('SOC date: '+str(SOC_date))
+    print('SAB date: '+str(SAB_date))
 
     master_non_tbc['BUCKET'] = np.where((master_non_tbc['BUCKET'].str.contains('NA') == True),(np.where(master_non_tbc['SCHEDULED DATE'].dt.date <= SOC_date,'SHORT SOC',
                         (np.where((master_non_tbc['SCHEDULED DATE'].dt.date > SOC_date) & (master_non_tbc['SCHEDULED DATE'].dt.date <= SAB_date),
@@ -282,7 +288,7 @@ def Shippable_complete():
     master_summary_sc.sort_values(by=['CATEGORY VALUE','CLOSED DATE'],ascending=[True, True],inplace=True)
     master_summary_sc.reset_index(drop=True, inplace=True)
     master_summary_sc['PRIORITY'] = master_summary_sc.index + 1
-    master_summary_sc.to_excel(path()+r'\Files\\master_summary_sc.xlsx',index=False)
+    master_summary_sc.to_excel(path()+r'\\Files\\master_summary_sc.xlsx',index=False)
 
     ship_pivot = pd.pivot_table(master_summary_sc,index = ['COMPLEXITY CATEGORY'],columns={'PGI'},values = ['OPEN QTY'],aggfunc = 'sum',margins=True,margins_name = 'TOTAL',fill_value=0)
     ship_pivot = pd.DataFrame(ship_pivot.to_records())
@@ -294,7 +300,7 @@ def Shippable_complete():
     
     mail_format = mail_format.merge(df_sap_country,on='PO',how='left').reset_index(drop = True)    
 
-    with pd.ExcelWriter(path()+r'\Files\\Shippable_'+format_date(3)+'.xlsx') as writer:
+    with pd.ExcelWriter(path()+r'\\Files\\Shippable_'+format_date(3)+'.xlsx') as writer:
         mail_format.to_excel(writer,'SHIPPABLE', index = False)
         ship_pivot.to_excel(writer,'SUMMARY', index = False)
         master_summary.to_excel(writer,'RAWDATA',index = False)
@@ -304,7 +310,7 @@ def Shippable_complete():
 
     df_case_assign = case_assignnment(master_summary,prev_master)
 
-    with pd.ExcelWriter(path()+r'\Files\\Shippable_'+format_date(3)+'(CA).xlsx') as writer_complete:
+    with pd.ExcelWriter(path()+r'\\Files\\Shippable_'+format_date(3)+'(CA).xlsx') as writer_complete:
         df_case_assign.to_excel(writer_complete,'CASE ASSIGNMENT',index = False)
 
     try:

@@ -1009,6 +1009,7 @@ def get_SOC_SAB():
     
     return SOC_date,SAB_date
 
+# print(get_SOC_SAB())
 
 def possible_cases(df,case):
 
@@ -1054,7 +1055,10 @@ def assing_buckets(df,column_name,reference_column):
 
     df[column_name] = pd.cut(df[reference_column],bins).astype(str)
 
-    array = [[r'\.0$',''],['(',''],[',',' to'],[']','']]
+    # array = [[r'\.0$',''],['(',''],[',',' to'],[']','']]
+
+    array = [[r'\.0$',''],[r'\(',''],[',',' to'],[r'\]','']]
+
 
     for i in array:
 
@@ -1171,12 +1175,13 @@ def prd_order_list(df):
     df['WORK ORDER'] = df['WORK ORDER'].str.zfill(12)
     df.rename(columns={'WORK ORDER': 'WO'}, inplace=True)
     df = signals(df ,'WO','ProductionOrderList' ,'SHORT', '')
-
+    df['CLOSE DATE'] = df['CLOSE DATE'].str.replace('T', ' ', regex=True)
+    df.to_excel(path()+"\\Files\\what.xlsx")
     if df.empty:
         return pd.DataFrame(columns = ['WORK ORDER','PRD ORDER LIST','EVENT','CLOSED DATE'])
     else:
         df['WO'] = df['WO'].str.replace(r'^(0+)', '', regex=True).fillna('0')
-        df['CLOSE DATE'] = pd.to_datetime(df['CLOSE DATE'])
+        df['CLOSE DATE'] = pd.to_datetime(df['CLOSE DATE'],format='mixed')
 
         df=df[['WO','STATUS','BUCKET','CLOSE DATE']]
         df.columns=['WORK ORDER','PRD ORDER LIST','EVENT','CLOSED DATE']
