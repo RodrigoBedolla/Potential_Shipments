@@ -12,6 +12,7 @@ import sharepy
 import numpy as np
 import re
 from io import StringIO
+import shutil
 
 #Shared Folder path
 def share_path():
@@ -655,10 +656,13 @@ def cygnus_request(wos,report):
 def cyg_cookie():
     
     #Login to CyGNUS and save cooke with credentials
-    subprocess.call('sh bash_scripts/Login.sh')
+    #subprocess.call('sh bash_scripts/Login.sh')
+    print('login')
+    shutil.copyfile(share_path()+r'\Files_Format\cookie.txt', path()+r'\Scripts\bash_scripts\cookie.txt')
 
 def cyg_logout():
-    subprocess.call('sh bash_scripts/Logout.sh')
+    #subprocess.call('sh bash_scripts/Logout.sh')
+    print('logout')
 
 def download_cygnus_files(df,column_list,column_name,array_range,sign_concat,report):
 
@@ -957,7 +961,9 @@ def rdd_validation(df):
 def cookie_cygnus():
 
     #Login to CyGNUS and save cooke with credentials
-    subprocess.call('sh bash_scripts/Login.sh')
+    #subprocess.call('sh bash_scripts/Login.sh')
+    print('login')
+    shutil.copyfile(share_path()+r'\Files_Format\cookie.txt', path()+r'\Scripts\bash_scripts\cookie.txt')
 
 def txt_array_2d(z_file):
 
