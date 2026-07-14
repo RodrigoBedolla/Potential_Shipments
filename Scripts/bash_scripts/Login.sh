@@ -1,5 +1,5 @@
-usr="erikruiz"
-pass="Magaly2501"
+usr="rodrigobedolla"
+pass="@R0dr1g02"
 
 curl -s -c bash_scripts/cookie.txt 'http://10.19.17.100/CyGNUS/' > bash_scripts/home.txt
 

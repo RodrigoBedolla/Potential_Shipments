@@ -15,4 +15,4 @@ curl -b bash_scripts/cookie.txt 'https://10.19.17.100/CyGNUS/srvcygnus' \
             {"param":"strTrantype","val":"HoldToolReport"},
             {"param":"environment","val":"CyGNUS"},
             {"param":"strClient","val":"HPE"},
-            {"param":"strUserName","val":""}]' \
+            {"param":"strUserName","val":"rodrigobedolla"}]' \
